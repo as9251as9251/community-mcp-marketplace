@@ -8,7 +8,8 @@
 
 Applies to: `memory_upsert`, `contact_add_tag`, `contact_append_note`,
 `reservation_update_status`, `reservation_reschedule`, `dispatch_create`,
-`escalate_to_human`, `message_send`, `broadcast_create`.
+`escalate_to_human`, `message_send`, `broadcast_create`, `knowledge_upsert`,
+`flow_set_enabled`, `flow_start`.
 
 ### message_send preview-gate
 

@@ -7,7 +7,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 PLUGINS = ROOT / "plugins"
-VERSION = "1.8.2"
+VERSION = "1.9.0"
 
 BRANDS = [
     {
@@ -75,7 +75,8 @@ Full design (repo root): `docs/我們的Skill設計.md`
 
 Applies to: `memory_upsert`, `contact_add_tag`, `contact_append_note`,
 `reservation_update_status`, `reservation_reschedule`, `dispatch_create`,
-`escalate_to_human`, `message_send`, `broadcast_create`.
+`escalate_to_human`, `message_send`, `broadcast_create`, `knowledge_upsert`,
+`flow_set_enabled`, `flow_start`.
 
 ### message_send preview-gate
 
@@ -134,7 +135,8 @@ Prefer these customer-facing words:
 | 私訊客人 | `message_preview` → `message_send` |
 | 群發 | `broadcast_list`, `broadcast_audience_preview`, `broadcast_create` |
 | 標籤 | `tags_list`, `contact_add_tag` |
-| 旅程 | `flows_list`, `flow_get`, `flow_sessions_list`（唯讀） |
+| 旅程／自動化 | `flows_list`, `flow_get`, `flow_sessions_list`, `flow_set_enabled`, `flow_start`（後兩者為提案） |
+| 知識庫／FAQ／價目／店規 | `knowledge_search`, `knowledge_upsert`（提案） |
 | 待核准 | `proposals_list` |
 | 連線／用量 | `mcp_whoami`, `mcp_usage_summary` |
 
@@ -585,32 +587,39 @@ Confirm with write-lifecycle first; remind dashboard approval may be required.
         f"{key}-flows/SKILL.md",
         f"""---
 name: {key}-flows
-description: Inspect {disp} multi-step DM journeys (flows_list, flow_get, flow_sessions_list). Read-only — no create/start/pause via MCP.
+description: Inspect and propose enable/start for {disp} multi-step DM journeys (flows_list, flow_get, flow_sessions_list, flow_set_enabled, flow_start).
 ---
 
 # Skill: {key}-flows
 
-**Prerequisite:** `{key}-universal-workflow`.
+**Prerequisite:** `{key}-universal-workflow` + `references/write-lifecycle.md` for writes.
 
-## MCP tools
+## Read
 
 - `flows_list` — journey summaries (`enabled_only` optional, `limit`)
 - `flow_get` — one journey summary by `flow_id` (no full steps JSON)
 - `flow_sessions_list` — run status; filter `contact_id` / `flow_id` / `status`
 
-## Lifecycle (read-only truth)
+## Write / proposal
+
+- `flow_set_enabled` — required `flow_id`, `enabled` (true/false)
+- `flow_start` — required `flow_id`, `contact_id` (flow must already be enabled)
+
+## Lifecycle
 
 | User ask | Do |
 |---|---|
 | 有哪些旅程 | `flows_list` |
-| 某一支細節 | `flow_get`（只報工具回傳欄位） |
+| 某一支細節 | `flow_get` |
 | 某人是否在旅程中 | `flow_sessions_list` + `contact_id` |
-| 建立／啟動／暫停 | **後台** — MCP 無 create/start/pause；勿發明工具名 |
+| 啟用／停用 | confirm → `flow_set_enabled` → dashboard approval |
+| 幫某人啟動 | confirm → `flow_start` → approval; then check sessions |
+| 建立新旅程步驟圖 | **後台** — MCP 無 create/edit steps |
 
 ## Guardrails
 
-- Report only statuses returned by the tools.
-- Do not claim publish/pause succeeded via MCP.
+- Do not invent create/edit-step tools.
+- Reminder: proposal ≠ live until approved.
 """,
     )
 
@@ -814,22 +823,26 @@ description: List {disp} dispatch jobs, propose new jobs, or escalate to a human
         f"{key}-knowledge/SKILL.md",
         f"""---
 name: {key}-knowledge
-description: Search {disp} shop knowledge base FAQ / price / policy via knowledge_search.
+description: Search or propose upserts to {disp} shop knowledge base (knowledge_search, knowledge_upsert).
 ---
 
 # Skill: {key}-knowledge
 
-**Prerequisite:** `{key}-universal-workflow`.
+**Prerequisite:** `{key}-universal-workflow` + `references/write-lifecycle.md` before upsert.
 
-## MCP tools
+## Read
 
-- `knowledge_search` — `q` keyword, `limit` 1–10 (default 5). Read-only.
+- `knowledge_search` — `q` keyword, `limit` 1–10 (default 5).
+
+## Write / proposal
+
+- `knowledge_upsert` — required `title`, `body`; optional `category`, `entry_id` (update), `enabled`.
 
 ## Workflow
 
-1. Call with the user's question as `q`.
-2. Summarize answers in plain language; cite snippets when helpful.
-3. If nothing useful returns, say the knowledge base may not cover it — do not invent shop facts.
+1. Search first with the user's question as `q`.
+2. Summarize answers; cite snippets; do not invent shop facts.
+3. To add/update FAQ from investigation: confirm title/body → `knowledge_upsert` → remind dashboard approval.
 """,
     )
 
@@ -1207,6 +1220,11 @@ You can also re-Authenticate after Logout on the agent side if the token is stal
         f"""# Changelog
 
 ## {VERSION}
+
+- MCP proposals: `knowledge_upsert`, `flow_set_enabled`, `flow_start`.
+- Skills: knowledge／flows cover propose enable/start and FAQ upsert.
+
+## 1.8.2
 
 - Schema: `contact_add_tag` / `contact_append_note` / `escalate_to_human` require `contact_id`; `dispatch_create` accepts optional `contact_id`.
 - Skills: contacts／dispatch document contact-scoped writes.

@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.9.0
+
+- MCP proposals: `knowledge_upsert`, `flow_set_enabled`, `flow_start`.
+- Skills: knowledge／flows cover propose enable/start and FAQ upsert.
+
 ## 1.8.2
 
 - Schema: `contact_add_tag` / `contact_append_note` / `escalate_to_human` require `contact_id`; `dispatch_create` accepts optional `contact_id`.

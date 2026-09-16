@@ -1,18 +1,22 @@
 ---
 name: real-knowledge
-description: Search REAL shop knowledge base FAQ / price / policy via knowledge_search.
+description: Search or propose upserts to REAL shop knowledge base (knowledge_search, knowledge_upsert).
 ---
 
 # Skill: real-knowledge
 
-**Prerequisite:** `real-universal-workflow`.
+**Prerequisite:** `real-universal-workflow` + `references/write-lifecycle.md` before upsert.
 
-## MCP tools
+## Read
 
-- `knowledge_search` — `q` keyword, `limit` 1–10 (default 5). Read-only.
+- `knowledge_search` — `q` keyword, `limit` 1–10 (default 5).
+
+## Write / proposal
+
+- `knowledge_upsert` — required `title`, `body`; optional `category`, `entry_id` (update), `enabled`.
 
 ## Workflow
 
-1. Call with the user's question as `q`.
-2. Summarize answers in plain language; cite snippets when helpful.
-3. If nothing useful returns, say the knowledge base may not cover it — do not invent shop facts.
+1. Search first with the user's question as `q`.
+2. Summarize answers; cite snippets; do not invent shop facts.
+3. To add/update FAQ from investigation: confirm title/body → `knowledge_upsert` → remind dashboard approval.

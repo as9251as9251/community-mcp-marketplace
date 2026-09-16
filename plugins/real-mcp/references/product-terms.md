@@ -27,7 +27,8 @@ Prefer these customer-facing words:
 | 私訊客人 | `message_preview` → `message_send` |
 | 群發 | `broadcast_list`, `broadcast_audience_preview`, `broadcast_create` |
 | 標籤 | `tags_list`, `contact_add_tag` |
-| 旅程 | `flows_list`, `flow_get`, `flow_sessions_list`（唯讀） |
+| 旅程／自動化 | `flows_list`, `flow_get`, `flow_sessions_list`, `flow_set_enabled`, `flow_start`（後兩者為提案） |
+| 知識庫／FAQ／價目／店規 | `knowledge_search`, `knowledge_upsert`（提案） |
 | 待核准 | `proposals_list` |
 | 連線／用量 | `mcp_whoami`, `mcp_usage_summary` |
 
