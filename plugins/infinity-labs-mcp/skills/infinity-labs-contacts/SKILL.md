@@ -1,6 +1,6 @@
 ---
 name: infinity-labs-contacts
-description: List and look up INFINITY LABS contacts via MCP (contacts_list, contact_get). Use when the user asks about customers or contacts.
+description: List/search INFINITY LABS contacts and tags via MCP (contacts_list, contacts_search, contact_get, tags_list).
 ---
 
 # Skill: infinity-labs-contacts
@@ -9,15 +9,17 @@ description: List and look up INFINITY LABS contacts via MCP (contacts_list, con
 
 ## MCP tools
 
-- `contacts_list` — recent contacts (read-only, max 50). Params: `limit` (1–50, default 20), optional `q`.
-- `contact_get` — one contact by `contact_id` (required, integer).
+- `contacts_list` — recent contacts (max 50). Params: `limit`, optional `q` name.
+- `contacts_search` — finer search: optional `q` (name／external id), `tag`, `platform`, `limit`.
+- `contact_get` — one contact by `contact_id`.
+- `tags_list` — tag catalog + holder counts; optional `q`, `limit`.
 
 ## Workflow
 
-1. Browse/search with `contacts_list`; pass `q` for name fragments.
-2. Detail with `contact_get` using an id from the list or the user.
-3. Use plain product language (`references/product-terms.md`).
+1. Prefer `contacts_search` when the user gives a tag/platform/id fragment.
+2. Use `tags_list` before tagging or broadcast-by-tag.
+3. Detail with `contact_get`.
 
 ## Writes
 
-Tagging / notes are **not** in this skill — use `infinity-labs-ops` and `references/write-lifecycle.md`.
+Tagging / notes → `infinity-labs-ops` + write-lifecycle (proposals).

@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.6.0
+
+- P2 MCP: `tags_list`, `contacts_search`, `flows_list`, `flow_get`, `flow_sessions_list`.
+- Skills: expand contacts; add `*-flows`; commands `list-tags`, `list-flows`.
+
 ## 1.5.0
 
 - P1 MCP: `message_send` (approve → send), `broadcast_list`, `broadcast_audience_preview`, `broadcast_create` (approve → draft only).

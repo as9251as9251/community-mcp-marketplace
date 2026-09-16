@@ -33,10 +33,12 @@ Canonical design: repo `docs/我們的Skill設計.md` · local summary `referenc
 | 連線／驗證／登入 MCP／設定好了嗎 | `real-session` |
 | 你能做什麼／憲章／邊界 | 本 skill ＋ `references/merchant-charter.md` |
 | 聯絡人／客戶／查誰 | `real-contacts` |
+| 標籤目錄 | `real-contacts`（tags_list） |
 | 收件匣／訊息中心／誰找過 | `real-inbox` |
 | 搜訊息／查對話內容／關鍵字 | `real-investigate` |
 | 發訊息／回覆客人／私訊 | `real-messaging` |
 | 群發／broadcast | `real-broadcast` |
+| 旅程／自動化流程 | `real-flows` |
 | 預約 | `real-reservations` |
 | 派工 | `real-dispatch` |
 | 知識庫／FAQ／價目／店規 | `real-knowledge` |

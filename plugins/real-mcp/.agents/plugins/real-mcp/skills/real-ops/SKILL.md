@@ -16,10 +16,12 @@ description: REAL project overview via workspace_summary, and router to domain s
 | Need | Skill |
 |---|---|
 | 聯絡人 | `real-contacts` |
+| 標籤 | `real-contacts` |
 | 收件匣／對話 | `real-inbox` |
 | 搜訊息 | `real-investigate` |
 | 發私訊 | `real-messaging` |
 | 群發 | `real-broadcast` |
+| 旅程 | `real-flows` |
 | 預約 | `real-reservations` |
 | 派工／轉真人 | `real-dispatch` |
 | FAQ／價目 | `real-knowledge` |

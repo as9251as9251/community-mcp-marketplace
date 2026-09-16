@@ -4,7 +4,7 @@
 
 **不含**後台原始碼、資料庫、金鑰、商家資料。真正能力在各站伺服器（REAL／s1mple／INFINITY LABS）。
 
-版本 **1.5.0**。
+版本 **1.6.0**。
 
 ## 我們自己的設計（請先讀）
 
@@ -53,11 +53,12 @@ community-mcp-marketplace/
 | Skill | Tools |
 |---|---|
 | session / ops | `workspace_summary` |
-| contacts | `contacts_list`, `contact_get` |
+| contacts | `contacts_list`, `contacts_search`, `contact_get`, `tags_list` |
 | inbox | `inbox_list`, `conversation_get` |
 | investigate | `messages_search` |
 | messaging | `message_send`（提案） |
 | broadcast | `broadcast_list`, `broadcast_audience_preview`, `broadcast_create`（草稿提案） |
+| flows | `flows_list`, `flow_get`, `flow_sessions_list` |
 | reservations | `reservations_list`, `reservation_*` |
 | dispatch | `dispatch_list`, `dispatch_create`, `escalate_to_human` |
 | knowledge | `knowledge_search` |

@@ -7,7 +7,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 PLUGINS = ROOT / "plugins"
-VERSION = "1.5.0"
+VERSION = "1.6.0"
 
 BRANDS = [
     {
@@ -399,10 +399,12 @@ Canonical design: repo `docs/我們的Skill設計.md` · local summary `referenc
 | 連線／驗證／登入 MCP／設定好了嗎 | `{key}-session` |
 | 你能做什麼／憲章／邊界 | 本 skill ＋ `references/merchant-charter.md` |
 | 聯絡人／客戶／查誰 | `{key}-contacts` |
+| 標籤目錄 | `{key}-contacts`（tags_list） |
 | 收件匣／訊息中心／誰找過 | `{key}-inbox` |
 | 搜訊息／查對話內容／關鍵字 | `{key}-investigate` |
 | 發訊息／回覆客人／私訊 | `{key}-messaging` |
 | 群發／broadcast | `{key}-broadcast` |
+| 旅程／自動化流程 | `{key}-flows` |
 | 預約 | `{key}-reservations` |
 | 派工 | `{key}-dispatch` |
 | 知識庫／FAQ／價目／店規 | `{key}-knowledge` |
@@ -423,7 +425,7 @@ Canonical design: repo `docs/我們的Skill設計.md` · local summary `referenc
         f"{key}-contacts/SKILL.md",
         f"""---
 name: {key}-contacts
-description: List and look up {disp} contacts via MCP (contacts_list, contact_get). Use when the user asks about customers or contacts.
+description: List/search {disp} contacts and tags via MCP (contacts_list, contacts_search, contact_get, tags_list).
 ---
 
 # Skill: {key}-contacts
@@ -432,18 +434,45 @@ description: List and look up {disp} contacts via MCP (contacts_list, contact_ge
 
 ## MCP tools
 
-- `contacts_list` — recent contacts (read-only, max 50). Params: `limit` (1–50, default 20), optional `q`.
-- `contact_get` — one contact by `contact_id` (required, integer).
+- `contacts_list` — recent contacts (max 50). Params: `limit`, optional `q` name.
+- `contacts_search` — finer search: optional `q` (name／external id), `tag`, `platform`, `limit`.
+- `contact_get` — one contact by `contact_id`.
+- `tags_list` — tag catalog + holder counts; optional `q`, `limit`.
 
 ## Workflow
 
-1. Browse/search with `contacts_list`; pass `q` for name fragments.
-2. Detail with `contact_get` using an id from the list or the user.
-3. Use plain product language (`references/product-terms.md`).
+1. Prefer `contacts_search` when the user gives a tag/platform/id fragment.
+2. Use `tags_list` before tagging or broadcast-by-tag.
+3. Detail with `contact_get`.
 
 ## Writes
 
-Tagging / notes are **not** in this skill — use `{key}-ops` and `references/write-lifecycle.md`.
+Tagging / notes → `{key}-ops` + write-lifecycle (proposals).
+""",
+    )
+
+    skill(
+        f"{key}-flows/SKILL.md",
+        f"""---
+name: {key}-flows
+description: Inspect {disp} multi-step DM journeys (flows_list, flow_get, flow_sessions_list). Read-only.
+---
+
+# Skill: {key}-flows
+
+**Prerequisite:** `{key}-universal-workflow`.
+
+## MCP tools
+
+- `flows_list` — journey summaries (`enabled_only` optional, `limit`)
+- `flow_get` — one journey summary by `flow_id` (no full steps JSON)
+- `flow_sessions_list` — run status; filter `contact_id` / `flow_id` / `status`
+
+## Workflow
+
+1. List or get definition summary.
+2. For “is this guest in a journey?”, use `flow_sessions_list` with `contact_id`.
+3. Do not invent create/start/pause tools — not exposed on MCP yet.
 """,
     )
 
@@ -682,10 +711,12 @@ description: {disp} project overview via workspace_summary, and router to domain
 | Need | Skill |
 |---|---|
 | 聯絡人 | `{key}-contacts` |
+| 標籤 | `{key}-contacts` |
 | 收件匣／對話 | `{key}-inbox` |
 | 搜訊息 | `{key}-investigate` |
 | 發私訊 | `{key}-messaging` |
 | 群發 | `{key}-broadcast` |
+| 旅程 | `{key}-flows` |
 | 預約 | `{key}-reservations` |
 | 派工／轉真人 | `{key}-dispatch` |
 | FAQ／價目 | `{key}-knowledge` |
@@ -744,6 +775,26 @@ description: 使用 {key}-broadcast 列出近期群發
 ---
 
 使用 {key}-broadcast 的 broadcast_list 列出近期群發任務。
+""",
+    )
+    command(
+        "list-tags.md",
+        f"""---
+name: list-tags
+description: 使用 {key}-contacts 列出標籤目錄
+---
+
+使用 {key}-contacts 的 tags_list 列出專案標籤與人數。
+""",
+    )
+    command(
+        "list-flows.md",
+        f"""---
+name: list-flows
+description: 使用 {key}-flows 列出多步驟旅程
+---
+
+使用 {key}-flows 的 flows_list 列出多步驟私訊旅程摘要。
 """,
     )
     command(
@@ -830,9 +881,9 @@ See repo root: [`docs/我們的Skill設計.md`](../../docs/我們的Skill設計.
 
 Includes:
 
-- Skills: connect, session, charter/policy, contacts, inbox, investigate, messaging, broadcast, reservations, dispatch, knowledge, memory, ops
+- Skills: connect, session, charter/policy, contacts, inbox, investigate, messaging, broadcast, flows, reservations, dispatch, knowledge, memory, ops
 - References: merchant-charter, write-lifecycle, brand-isolation, product-terms, error-recovery
-- Commands: validate, contacts, inbox, search-messages, broadcasts, draft-broadcast, summary, reservations, dispatch, knowledge, escalate, explain-capabilities
+- Commands: validate, contacts, tags, inbox, search-messages, broadcasts, draft-broadcast, flows, summary, reservations, dispatch, knowledge, escalate, explain-capabilities
 - Host manifests: Cursor, Claude, Codex, Agents
 
 No product source code. Data stays on `{domain}`.
@@ -948,6 +999,11 @@ You can also re-Authenticate after Logout on the agent side if the token is stal
 
 ## {VERSION}
 
+- P2 MCP: `tags_list`, `contacts_search`, `flows_list`, `flow_get`, `flow_sessions_list`.
+- Skills: expand contacts; add `*-flows`; commands `list-tags`, `list-flows`.
+
+## 1.5.0
+
 - P1 MCP: `message_send` (approve → send), `broadcast_list`, `broadcast_audience_preview`, `broadcast_create` (approve → draft only).
 - Skills: `*-messaging`, `*-broadcast`; commands: `list-broadcasts`, `draft-broadcast`.
 
@@ -1039,11 +1095,12 @@ community-mcp-marketplace/
 | Skill | Tools |
 |---|---|
 | session / ops | `workspace_summary` |
-| contacts | `contacts_list`, `contact_get` |
+| contacts | `contacts_list`, `contacts_search`, `contact_get`, `tags_list` |
 | inbox | `inbox_list`, `conversation_get` |
 | investigate | `messages_search` |
 | messaging | `message_send`（提案） |
 | broadcast | `broadcast_list`, `broadcast_audience_preview`, `broadcast_create`（草稿提案） |
+| flows | `flows_list`, `flow_get`, `flow_sessions_list` |
 | reservations | `reservations_list`, `reservation_*` |
 | dispatch | `dispatch_list`, `dispatch_create`, `escalate_to_human` |
 | knowledge | `knowledge_search` |
