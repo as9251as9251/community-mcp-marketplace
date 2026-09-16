@@ -1,7 +1,7 @@
 {
   "name": "infinity-labs-mcp",
   "displayName": "INFINITY LABS MCP",
-  "version": "1.8.0",
+  "version": "1.8.1",
   "description": "Workflow skills and hosted MCP for INFINITY LABS. Install, then connect the bundled MCP through OAuth.",
   "author": {
     "name": "Community MCP",

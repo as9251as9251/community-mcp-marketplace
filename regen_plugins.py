@@ -7,7 +7,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 PLUGINS = ROOT / "plugins"
-VERSION = "1.8.0"
+VERSION = "1.8.1"
 
 BRANDS = [
     {
@@ -842,13 +842,14 @@ description: List or upsert internal guest memory on {disp} (memory_list, memory
 
 ## MCP tools
 
-- `memory_list` — optional `q`, `limit` 1–20 (default 8). Read-only.
-- `memory_upsert` — required `body`; optional `kind` (`preference|fact|history|note`), optional `key` (same key overwrites).
+- `memory_list` — required `contact_id`; optional `q`, `limit` 1–20 (default 8). Read-only.
+- `memory_upsert` — required `contact_id`, `body`; optional `kind` (`preference|fact|history|note`), optional `key` (same key overwrites).
 
 ## Workflow
 
-1. List/search first when the user asks what is remembered.
-2. Confirm before upsert; clarify this is **internal** staff memory.
+1. Resolve `contact_id` via `{key}-contacts` / `{key}-inbox` if needed.
+2. List/search first when the user asks what is remembered.
+3. Confirm before upsert; clarify this is **internal** staff memory.
 """,
     )
 
@@ -1202,6 +1203,11 @@ You can also re-Authenticate after Logout on the agent side if the token is stal
         f"""# Changelog
 
 ## {VERSION}
+
+- Fix: memory tools require `contact_id` in schema/skills; MCP allowlist UI shows full builtin catalog + reset-to-all-open.
+- Fix: `message_send` strips `preview_token` from stored proposals; soft-deleted contacts rejected at preview/propose.
+
+## 1.8.0
 
 - Skill shell learning pass: `timezone-policy`, `investigate-playbook`, `broadcast-status-cases`.
 - Thicker inbox／investigate／broadcast／flows boundaries; product-terms dashboard↔MCP map.

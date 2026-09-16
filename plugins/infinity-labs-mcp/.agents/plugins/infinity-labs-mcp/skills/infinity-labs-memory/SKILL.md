@@ -9,10 +9,11 @@ description: List or upsert internal guest memory on INFINITY LABS (memory_list,
 
 ## MCP tools
 
-- `memory_list` — optional `q`, `limit` 1–20 (default 8). Read-only.
-- `memory_upsert` — required `body`; optional `kind` (`preference|fact|history|note`), optional `key` (same key overwrites).
+- `memory_list` — required `contact_id`; optional `q`, `limit` 1–20 (default 8). Read-only.
+- `memory_upsert` — required `contact_id`, `body`; optional `kind` (`preference|fact|history|note`), optional `key` (same key overwrites).
 
 ## Workflow
 
-1. List/search first when the user asks what is remembered.
-2. Confirm before upsert; clarify this is **internal** staff memory.
+1. Resolve `contact_id` via `infinity-labs-contacts` / `infinity-labs-inbox` if needed.
+2. List/search first when the user asks what is remembered.
+3. Confirm before upsert; clarify this is **internal** staff memory.

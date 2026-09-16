@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.8.1
+
+- Fix: memory tools require `contact_id` in schema/skills; MCP allowlist UI shows full builtin catalog + reset-to-all-open.
+- Fix: `message_send` strips `preview_token` from stored proposals; soft-deleted contacts rejected at preview/propose.
+
 ## 1.8.0
 
 - Skill shell learning pass: `timezone-policy`, `investigate-playbook`, `broadcast-status-cases`.
