@@ -1,0 +1,25 @@
+{
+  "name": "infinity-labs-mcp",
+  "displayName": "INFINITY LABS MCP",
+  "version": "1.1.0",
+  "description": "Workflow skills and hosted MCP for INFINITY LABS. Install, Authenticate via OAuth, then validate with the session skill. No tokens to paste.",
+  "author": {
+    "name": "Community MCP",
+    "email": "plugins@example.com"
+  },
+  "homepage": "https://infinity-labs.zeabur.app",
+  "license": "MIT",
+  "keywords": [
+    "mcp",
+    "oauth",
+    "infinity-labs",
+    "crm",
+    "skills",
+    "authenticate"
+  ],
+  "category": "Productivity",
+  "logo": "assets/logo.svg",
+  "skills": "./skills/",
+  "commands": "./commands/",
+  "mcpServers": "./mcp.json"
+}

@@ -1,0 +1,50 @@
+{
+  "name": "community-mcp-marketplace",
+  "owner": {
+    "name": "Community MCP",
+    "email": "plugins@example.com"
+  },
+  "metadata": {
+    "description": "Thin public shells that connect agents to REAL / s1mple / INFINITY LABS MCP via OAuth Authenticate. Skills + commands included. No product source code.",
+    "version": "1.1.0",
+    "pluginRoot": "plugins"
+  },
+  "plugins": [
+    {
+      "name": "real-mcp",
+      "source": "real-mcp",
+      "description": "Connect to REAL (realvip.cc) MCP with Authenticate + workflow skills",
+      "category": "mcp",
+      "tags": [
+        "mcp",
+        "oauth",
+        "crm",
+        "skills"
+      ]
+    },
+    {
+      "name": "s1mple-mcp",
+      "source": "s1mple-mcp",
+      "description": "Connect to s1mple (s1mple-pro.com) MCP with Authenticate + workflow skills",
+      "category": "mcp",
+      "tags": [
+        "mcp",
+        "oauth",
+        "crm",
+        "skills"
+      ]
+    },
+    {
+      "name": "infinity-labs-mcp",
+      "source": "infinity-labs-mcp",
+      "description": "Connect to INFINITY LABS MCP with Authenticate + workflow skills",
+      "category": "mcp",
+      "tags": [
+        "mcp",
+        "oauth",
+        "crm",
+        "skills"
+      ]
+    }
+  ]
+}

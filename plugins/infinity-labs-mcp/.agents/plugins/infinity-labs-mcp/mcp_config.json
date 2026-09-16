@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "infinity-labs": {
+      "url": "https://infinity-labs.zeabur.app/api/mcp/v1/jsonrpc"
+    }
+  }
+}

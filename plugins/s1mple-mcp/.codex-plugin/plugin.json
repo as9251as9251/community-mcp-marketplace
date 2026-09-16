@@ -1,0 +1,39 @@
+{
+  "name": "s1mple-mcp",
+  "version": "1.1.0",
+  "description": "Workflow skills and hosted MCP for s1mple.",
+  "author": {
+    "name": "Community MCP",
+    "url": "https://s1mple-pro.com"
+  },
+  "homepage": "https://s1mple-pro.com",
+  "license": "MIT",
+  "keywords": [
+    "mcp",
+    "oauth",
+    "s1mple",
+    "crm",
+    "skills"
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./codex.mcp.json",
+  "interface": {
+    "displayName": "s1mple MCP",
+    "shortDescription": "Skills and hosted MCP for s1mple.",
+    "longDescription": "Session validation, contacts, reservations, dispatch, and knowledge tools via OAuth. Product data stays on s1mple-pro.com.",
+    "developerName": "Community MCP",
+    "category": "Productivity",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://s1mple-pro.com",
+    "brandColor": "#1A56DB",
+    "logo": "./assets/logo.svg",
+    "defaultPrompt": [
+      "使用 s1mple-session 驗證我的 MCP 設定。確認可用後，簡短說明一下你能幫我做什麼。",
+      "使用 s1mple-contacts 列出最近聯絡人。",
+      "使用 s1mple-ops 給我一份專案摘要（聯絡人／預約／派工數量）。"
+    ]
+  }
+}

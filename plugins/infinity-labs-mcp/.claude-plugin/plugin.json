@@ -1,0 +1,22 @@
+{
+  "name": "infinity-labs-mcp",
+  "displayName": "INFINITY LABS MCP",
+  "version": "1.1.0",
+  "description": "Workflow skills and hosted MCP for INFINITY LABS. Install, then connect the bundled MCP through OAuth.",
+  "author": {
+    "name": "Community MCP",
+    "url": "https://infinity-labs.zeabur.app"
+  },
+  "homepage": "https://infinity-labs.zeabur.app",
+  "license": "MIT",
+  "keywords": [
+    "mcp",
+    "oauth",
+    "infinity-labs",
+    "crm",
+    "skills"
+  ],
+  "skills": "./skills/",
+  "commands": "./commands/",
+  "defaultEnabled": false
+}

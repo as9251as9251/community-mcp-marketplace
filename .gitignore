@@ -1,0 +1,12 @@
+# This repo is the public MCP shell only — never add product backends.
+.env
+.env.*
+*.pem
+*.key
+credentials*.json
+.DS_Store
+Thumbs.db
+__pycache__/
+*.pyc
+.venv/
+node_modules/

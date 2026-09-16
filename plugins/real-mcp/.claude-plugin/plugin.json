@@ -1,0 +1,22 @@
+{
+  "name": "real-mcp",
+  "displayName": "REAL MCP",
+  "version": "1.1.0",
+  "description": "Workflow skills and hosted MCP for REAL. Install, then connect the bundled MCP through OAuth.",
+  "author": {
+    "name": "Community MCP",
+    "url": "https://realvip.cc"
+  },
+  "homepage": "https://realvip.cc",
+  "license": "MIT",
+  "keywords": [
+    "mcp",
+    "oauth",
+    "real",
+    "crm",
+    "skills"
+  ],
+  "skills": "./skills/",
+  "commands": "./commands/",
+  "defaultEnabled": false
+}

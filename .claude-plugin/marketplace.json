@@ -1,0 +1,77 @@
+{
+  "name": "community-mcp-marketplace",
+  "owner": {
+    "name": "Community MCP",
+    "email": "plugins@example.com"
+  },
+  "description": "Community MCP marketplace shells for REAL / s1mple / INFINITY LABS — OAuth Authenticate plus workflow skills.",
+  "version": "1.1.0",
+  "plugins": [
+    {
+      "name": "real-mcp",
+      "source": "./plugins/real-mcp",
+      "displayName": "REAL MCP",
+      "description": "REAL MCP skills. After install, run validate-real-setup then query contacts or project summary as needed.",
+      "version": "1.1.0",
+      "author": {
+        "name": "Community MCP",
+        "url": "https://realvip.cc"
+      },
+      "homepage": "https://realvip.cc",
+      "license": "MIT",
+      "category": "Productivity",
+      "commands": "./plugins/real-mcp/commands/",
+      "keywords": [
+        "mcp",
+        "oauth",
+        "real",
+        "crm",
+        "skills"
+      ]
+    },
+    {
+      "name": "s1mple-mcp",
+      "source": "./plugins/s1mple-mcp",
+      "displayName": "s1mple MCP",
+      "description": "s1mple MCP skills. After install, run validate-s1mple-setup then query contacts or project summary as needed.",
+      "version": "1.1.0",
+      "author": {
+        "name": "Community MCP",
+        "url": "https://s1mple-pro.com"
+      },
+      "homepage": "https://s1mple-pro.com",
+      "license": "MIT",
+      "category": "Productivity",
+      "commands": "./plugins/s1mple-mcp/commands/",
+      "keywords": [
+        "mcp",
+        "oauth",
+        "s1mple",
+        "crm",
+        "skills"
+      ]
+    },
+    {
+      "name": "infinity-labs-mcp",
+      "source": "./plugins/infinity-labs-mcp",
+      "displayName": "INFINITY LABS MCP",
+      "description": "INFINITY LABS MCP skills. After install, run validate-infinity-labs-setup then query contacts or project summary as needed.",
+      "version": "1.1.0",
+      "author": {
+        "name": "Community MCP",
+        "url": "https://infinity-labs.zeabur.app"
+      },
+      "homepage": "https://infinity-labs.zeabur.app",
+      "license": "MIT",
+      "category": "Productivity",
+      "commands": "./plugins/infinity-labs-mcp/commands/",
+      "keywords": [
+        "mcp",
+        "oauth",
+        "infinity-labs",
+        "crm",
+        "skills"
+      ]
+    }
+  ]
+}

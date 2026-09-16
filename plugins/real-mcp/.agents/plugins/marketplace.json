@@ -1,0 +1,28 @@
+{
+  "name": "real-mcp",
+  "version": "1.1.0",
+  "interface": {
+    "displayName": "REAL MCP",
+    "logo": "../../assets/logo.svg",
+    "defaultPrompt": [
+      "使用 real-session 驗證我的 MCP 設定。確認可用後，簡短說明一下你能幫我做什麼。",
+      "使用 real-contacts 列出最近聯絡人。",
+      "使用 real-ops 給我一份專案摘要。"
+    ]
+  },
+  "plugins": [
+    {
+      "name": "real-mcp",
+      "version": "1.1.0",
+      "source": {
+        "source": "local",
+        "path": "./real-mcp"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

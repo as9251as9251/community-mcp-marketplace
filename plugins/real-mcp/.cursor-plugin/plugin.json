@@ -1,0 +1,25 @@
+{
+  "name": "real-mcp",
+  "displayName": "REAL MCP",
+  "version": "1.1.0",
+  "description": "Workflow skills and hosted MCP for REAL. Install, Authenticate via OAuth, then validate with the session skill. No tokens to paste.",
+  "author": {
+    "name": "Community MCP",
+    "email": "plugins@example.com"
+  },
+  "homepage": "https://realvip.cc",
+  "license": "MIT",
+  "keywords": [
+    "mcp",
+    "oauth",
+    "real",
+    "crm",
+    "skills",
+    "authenticate"
+  ],
+  "category": "Productivity",
+  "logo": "assets/logo.svg",
+  "skills": "./skills/",
+  "commands": "./commands/",
+  "mcpServers": "./mcp.json"
+}

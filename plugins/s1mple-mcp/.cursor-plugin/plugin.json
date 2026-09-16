@@ -1,0 +1,25 @@
+{
+  "name": "s1mple-mcp",
+  "displayName": "s1mple MCP",
+  "version": "1.1.0",
+  "description": "Workflow skills and hosted MCP for s1mple. Install, Authenticate via OAuth, then validate with the session skill. No tokens to paste.",
+  "author": {
+    "name": "Community MCP",
+    "email": "plugins@example.com"
+  },
+  "homepage": "https://s1mple-pro.com",
+  "license": "MIT",
+  "keywords": [
+    "mcp",
+    "oauth",
+    "s1mple",
+    "crm",
+    "skills",
+    "authenticate"
+  ],
+  "category": "Productivity",
+  "logo": "assets/logo.svg",
+  "skills": "./skills/",
+  "commands": "./commands/",
+  "mcpServers": "./mcp.json"
+}

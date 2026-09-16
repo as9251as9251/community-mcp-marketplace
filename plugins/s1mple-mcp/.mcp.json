@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "s1mple": {
+      "type": "http",
+      "url": "https://s1mple-pro.com/api/mcp/v1/jsonrpc"
+    }
+  }
+}

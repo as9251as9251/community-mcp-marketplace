@@ -1,0 +1,39 @@
+{
+  "name": "real-mcp",
+  "version": "1.1.0",
+  "description": "Workflow skills and hosted MCP for REAL.",
+  "author": {
+    "name": "Community MCP",
+    "url": "https://realvip.cc"
+  },
+  "homepage": "https://realvip.cc",
+  "license": "MIT",
+  "keywords": [
+    "mcp",
+    "oauth",
+    "real",
+    "crm",
+    "skills"
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./codex.mcp.json",
+  "interface": {
+    "displayName": "REAL MCP",
+    "shortDescription": "Skills and hosted MCP for REAL.",
+    "longDescription": "Session validation, contacts, reservations, dispatch, and knowledge tools via OAuth. Product data stays on realvip.cc.",
+    "developerName": "Community MCP",
+    "category": "Productivity",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://realvip.cc",
+    "brandColor": "#0B6E4F",
+    "logo": "./assets/logo.svg",
+    "defaultPrompt": [
+      "使用 real-session 驗證我的 MCP 設定。確認可用後，簡短說明一下你能幫我做什麼。",
+      "使用 real-contacts 列出最近聯絡人。",
+      "使用 real-ops 給我一份專案摘要（聯絡人／預約／派工數量）。"
+    ]
+  }
+}

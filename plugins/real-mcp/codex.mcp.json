@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "real": {
+      "type": "http",
+      "url": "https://realvip.cc/api/mcp/v1/jsonrpc"
+    }
+  }
+}
