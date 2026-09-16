@@ -10,8 +10,8 @@ See repo root: [`docs/我們的Skill設計.md`](../../docs/我們的Skill設計.
 Includes:
 
 - Skills: connect, session, charter/policy, contacts, inbox, investigate, messaging, broadcast, flows, reservations, dispatch, knowledge, memory, ops
-- References: merchant-charter, write-lifecycle, brand-isolation, product-terms, error-recovery
-- Commands: validate, whoami, contacts, tags, inbox, search-messages, broadcasts, draft-broadcast, draft-message, proposals, flows, summary, reservations, dispatch, knowledge, escalate, explain-capabilities
+- References: merchant-charter, write-lifecycle, timezone-policy, investigate-playbook, broadcast-status-cases, brand-isolation, product-terms, error-recovery
+- Commands: validate, whoami, contacts, tags, inbox, search-messages, investigate-week, broadcasts, draft-broadcast, draft-message, proposals, flows, summary, reservations, dispatch, knowledge, escalate, explain-capabilities
 - Host manifests: Cursor, Claude, Codex, Agents
 
 No product source code. Data stays on `s1mple-pro.com`.

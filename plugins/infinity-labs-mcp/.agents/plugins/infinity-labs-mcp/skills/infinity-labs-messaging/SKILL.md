@@ -25,5 +25,5 @@ description: Preview then propose a 1:1 plain-text message on INFINITY LABS (mes
 ## Guardrails
 
 - Plain text only via MCP. Cards / carousels / images → dashboard.
-- Never skip preview or user confirmation.
+- Never skip preview or user confirmation (stricter than “text-only skip preview” products).
 - If `send_supported` is false, do not call `message_send`.

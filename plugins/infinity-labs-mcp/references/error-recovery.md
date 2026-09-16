@@ -25,3 +25,4 @@ The project allowlist disabled that tool. Tell the user it is turned off for thi
 
 Do not hammer retries. Tell the user to wait briefly and try again.
 Customer-facing line: `這次操作無法完成，請稍後再試。`
+Do not invent credit-wallet explanations; if they ask about volume, use `mcp_usage_summary` (call counts only).

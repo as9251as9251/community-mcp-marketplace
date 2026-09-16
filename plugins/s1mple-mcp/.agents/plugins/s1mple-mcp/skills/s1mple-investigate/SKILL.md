@@ -1,27 +1,35 @@
 ---
 name: s1mple-investigate
-description: Search s1mple inbox message bodies with messages_search (read-only, max 30-day window). Use for keyword investigation before drafting replies or FAQ.
+description: Search s1mple inbox message bodies with messages_search (read-only, max 30-day window). Load investigate-playbook for sample/FAQ rules.
 ---
 
 # Skill: s1mple-investigate
 
-**Prerequisite:** `s1mple-universal-workflow` + `references/error-recovery.md`.
+**Prerequisite:** `s1mple-universal-workflow` + `references/error-recovery.md`.  
+**On demand:** `references/investigate-playbook.md`, `references/timezone-policy.md`.
 
 ## MCP tools
 
 - `messages_search` — required `q`; optional `contact_id`, `days` (1–30, default 14), `limit` 1–50.
 
+## Use when / Do not use when
+
+| Use when | Do not use when |
+|---|---|
+| 關鍵字／客訴主題／FAQ 草稿證據 | 「誰找過」→ `s1mple-inbox` |
+| 明確期間（轉成 `days`≤30） | 把 `conversation_get` 當整月語料 |
+| 需可追溯引用的訊息片段 | 無 `q` 的空搜尋（API 必填關鍵字） |
+
 ## Workflow
 
-1. Always pass a real keyword in `q`. Prefer concrete nouns (product names, order ids) over vague verbs.
-2. If the user names a period, set `days` explicitly (cap 30). Do not claim coverage beyond the window returned in `since` / `days`.
-3. Cite message ids / contact names from the result; do not invent quotes.
-4. For opening a full recent thread after a hit, use `s1mple-inbox` → `conversation_get`.
-5. If the user wants a reply, hand off to `s1mple-messaging` (preview-gate) — do not send from this skill.
-6. If hits suggest a reusable FAQ, propose drafting knowledge text for the user to confirm; do not invent `knowledge_upsert` if missing from `tools/list`.
+1. Load `references/investigate-playbook.md` for caps and honesty labels.
+2. Always pass a real keyword in `q`. Prefer concrete nouns over vague verbs.
+3. If the user names a period, set `days` explicitly (cap 30). Report returned `since` / `count`.
+4. Cite message ids / contact names from the result; do not invent quotes.
+5. After a hit, optional `s1mple-inbox` → `conversation_get` for recent context.
+6. Reply drafting → `s1mple-messaging`. FAQ draft → playbook thin path + optional `knowledge_search`.
 
 ## Guardrails
 
-- Read-only. No send / broadcast / CRM writes here.
-- Hard max **30 days** — split longer asks into multiple windows and say so.
-- Timezone for windows is server UTC unless the tool payload says otherwise; say so if the user asks.
+- Read-only. Prefer ≤5 searches per ask before summarizing.
+- Hard max **30 days** — split longer asks; label coverage as 樣本／部分 when limited.

@@ -7,7 +7,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 PLUGINS = ROOT / "plugins"
-VERSION = "1.7.0"
+VERSION = "1.8.0"
 
 BRANDS = [
     {
@@ -113,14 +113,123 @@ Prefer these customer-facing words:
 |---|---|
 | 專案 | workspace_id（除非使用者要 ID） |
 | 聯絡人／客人 | contact row / schema |
+| 收件匣／訊息中心 | inbox activity list as “全庫普查” |
+| 待核准提案 | “已送出給客人” without approval |
+| 群發草稿 | “已群發完成” when status is draft |
+| 旅程／自動化 | inventing create/start MCP tools |
 | 預約 | reservation entity |
 | 派工／派工單 | dispatch job payload |
 | 知識庫／FAQ／價目／店規 | knowledge_search raw hits only |
 | 記憶（內部） | memory_upsert internals |
 | 轉真人 | escalate payload |
 | 需後台核准 | “已寫入完成” without evidence |
+| MCP 呼叫次數 | credits／錢包／扣款 |
+
+## Dashboard label ↔ MCP tools
+
+| 後台說法 | MCP |
+|---|---|
+| 訊息中心／收件匣 | `inbox_list`, `conversation_get` |
+| 搜訊息／查關鍵字 | `messages_search` |
+| 私訊客人 | `message_preview` → `message_send` |
+| 群發 | `broadcast_list`, `broadcast_audience_preview`, `broadcast_create` |
+| 標籤 | `tags_list`, `contact_add_tag` |
+| 旅程 | `flows_list`, `flow_get`, `flow_sessions_list`（唯讀） |
+| 待核准 | `proposals_list` |
+| 連線／用量 | `mcp_whoami`, `mcp_usage_summary` |
 
 If the user asks for IDs or API fields, you may disclose non-sensitive mappings.
+""",
+        "timezone-policy.md": f"""# Timezone policy ({disp}) — instant MCP inputs
+
+Use when the user gives temporal language and you will put a **specific instant** into an MCP argument.
+
+Default wall-clock timezone when the user omits one: **Asia/Taipei (UTC+8)** — also returned by `mcp_whoami.timezone`.
+
+## Conversion rules
+
+1. Wall-clock without timezone → interpret as Asia/Taipei and encode with `+08:00`.
+2. User names a timezone / supplies `Z` / an offset → **honor it**; do not rewrite to Taipei.
+3. Relative calendar language (“明天”、“下週五”) → resolve on the **effective** timezone calendar (named offset or Taipei default).
+4. User gives **date only** but the tool needs an instant → ask for the clock boundary; do **not** invent midnight.
+5. Do not default an omitted customer timezone to `Z`.
+
+## Do not force this policy on
+
+| Class | Examples |
+|---|---|
+| Relative duration | “等 30 分鐘”、timeout 長度 |
+| Relative day windows | `messages_search.days`（往回 N 天；伺服器以 UTC `since` 截斷） |
+| Returned timestamps | tool 回傳的 `created_at`／`since`（原樣引用即可） |
+| Opaque tokens | pagination／preview_token |
+
+## Reads vs writes
+
+- **Reads:** when you encode user wall-clock into a plan, disclose the effective timezone in the same turn.
+- **Writes** (e.g. `reservation_reschedule.starts_at`): show intent + timezone + encoded ISO in the write-lifecycle confirmation.
+
+## Our tools note
+
+- `messages_search` uses relative `days` (1–30), not `startAt`/`endAt`. Translate “上週／本月” into an explicit `days` (or say the tool cannot express arbitrary calendar bounds) and report the returned `since`.
+- `mcp_usage_summary.days` is the same relative-window pattern.
+""",
+        "investigate-playbook.md": f"""# Investigate playbook ({disp})
+
+Read-only. Tools: `messages_search`, optional `conversation_get`, optional `knowledge_search`.
+
+## Tool choice
+
+| Ask | Use | Do not |
+|---|---|---|
+| 誰最近找過／收件匣 | `inbox_list`（`{key}-inbox`） | treat as full DB census |
+| 期間／關鍵字證據 | `messages_search` | use `inbox_list` for sentiment % |
+| 單線近期上下文 | `conversation_get` | treat as a year-long corpus |
+
+## Sample guardrails
+
+1. Prefer ≤ **5** `messages_search` calls per user ask before summarizing.
+2. Always pass real `q`. Our API **requires** a keyword — do not invent empty-corpus search.
+3. Cap: `days` ≤ 30 (default 14). Longer asks → split windows and say so; do not claim full-project coverage.
+4. Coverage label in the answer: report tool `days` / `since` / `count`. Use wording like「樣本／部分」when `count` hit the `limit`.
+5. Cite `message_id` or contact display name + short quote from the payload. **Never fabricate** complaints or guest quotes.
+6. Non-text / empty bodies: do not treat media-only rows as satisfaction signals.
+7. Do not blind-retry the same failing query. On auth errors → `{key}-session`.
+
+## FAQ thin path (from search hits)
+
+1. Search with concrete `q` themes the user cares about.
+2. Cluster recurring questions from **customer** text in the hits.
+3. Optionally `knowledge_search` for duplicates already in the knowledge base.
+4. Draft Q→A as **建議／綜合**; mark “樣本內無客服回覆” if you cannot verify a staff answer via `conversation_get`.
+5. Do **not** call a write/upsert tool unless it appears in `tools/list` and the user confirmed write-lifecycle.
+
+## Lenses (same tools, separate passes)
+
+- Complaint themes → keyword pass, then theme → evidence → improvement suggestion.
+- Opportunity / recurring ask → **separate** keyword pass; do not reuse one broad pull for both complaint + opportunity.
+- CS quality → only if payloads clearly distinguish staff vs guest; otherwise say attribution is unavailable.
+""",
+        "broadcast-status-cases.md": f"""# Broadcast status cases ({disp})
+
+Fields from `broadcast_list`: `status`, `target_count`, `sent_count`, `failed_count`, `scheduled_at`, `sent_at`.
+
+**Audience size:** trust `broadcast_audience_preview.eligible_count` only.  
+`tags_list` counts ≠ deliverable audience.
+
+## Golden cases
+
+| Observation | What you may say | Must not |
+|---|---|---|
+| `status=draft` (typical after MCP `broadcast_create` approve) | 草稿已建立；須到群發頁按發送 | 宣稱客人已收到 |
+| `status` shows scheduled + future `scheduled_at` | 已排程至該時間（若後台支援） | 改排程／取消（無對應 MCP） |
+| `scheduled_at` in the past but still not sent | 排程時間已過、目前狀態仍為… | 自動再 `broadcast_create` 當重送 |
+| `sent` / completed + `failed_count=0` | 已送出；成功數用 `sent_count` | 發明開啟率／點擊率 |
+| `failed_count>0` | 成功 `sent_count`、失敗 `failed_count`；根因不明就說不明 | 自動重送失敗名單 |
+| User wants retry after failure | 重新 `broadcast_audience_preview` + 確認 + 新草稿提案 | 靜默重複同一提案 |
+
+## After create
+
+Approval of `broadcast_create` creates a **draft** only. Sending remains a dashboard action.
 """,
         "error-recovery.md": f"""# Error recovery ({disp} / `{key}`)
 
@@ -149,6 +258,7 @@ The project allowlist disabled that tool. Tell the user it is turned off for thi
 
 Do not hammer retries. Tell the user to wait briefly and try again.
 Customer-facing line: `這次操作無法完成，請稍後再試。`
+Do not invent credit-wallet explanations; if they ask about volume, use `mcp_usage_summary` (call counts only).
 """,
     }
 
@@ -354,7 +464,7 @@ This skill uses the `{key}` MCP server. Authentication is managed by the agent t
 - Prefer `tools/list` (or the host equivalent) to confirm tools are visible.
 - Call `mcp_whoami` — brand, project name, timezone, allowlisted tool names (read-only).
 - Optionally `workspace_summary` — contact / reservation / dispatch counts.
-- Optionally `mcp_usage_summary` — recent MCP call counts by actor/tool (not a billing wallet).
+- Optionally `mcp_usage_summary` — **only when the user asks** about volume／呼叫次數 (call counts, not a billing wallet).
 
 ## Workflow
 
@@ -388,10 +498,16 @@ Canonical design: repo `docs/我們的Skill設計.md` · local summary `referenc
 ## Mandatory references
 
 - `references/merchant-charter.md` — our product rules in one page
-- `references/product-terms.md` — customer-facing wording
-- `references/write-lifecycle.md` — confirm → propose → approve
+- `references/product-terms.md` — customer-facing wording + dashboard↔MCP map
+- `references/write-lifecycle.md` — confirm → propose → approve (+ message preview-gate)
+- `references/timezone-policy.md` — wall-clock → MCP instant encoding
 - `references/brand-isolation.md` — `{key}` / `{domain}` only
 - `references/error-recovery.md` — auth / 429 / missing tools
+
+On-demand (domain):
+
+- `references/investigate-playbook.md` — when searching / analysing messages
+- `references/broadcast-status-cases.md` — when reading or drafting broadcasts
 
 ## Mandatory core
 
@@ -466,7 +582,7 @@ Tagging / notes → `{key}-ops` + write-lifecycle (proposals).
         f"{key}-flows/SKILL.md",
         f"""---
 name: {key}-flows
-description: Inspect {disp} multi-step DM journeys (flows_list, flow_get, flow_sessions_list). Read-only.
+description: Inspect {disp} multi-step DM journeys (flows_list, flow_get, flow_sessions_list). Read-only — no create/start/pause via MCP.
 ---
 
 # Skill: {key}-flows
@@ -479,11 +595,19 @@ description: Inspect {disp} multi-step DM journeys (flows_list, flow_get, flow_s
 - `flow_get` — one journey summary by `flow_id` (no full steps JSON)
 - `flow_sessions_list` — run status; filter `contact_id` / `flow_id` / `status`
 
-## Workflow
+## Lifecycle (read-only truth)
 
-1. List or get definition summary.
-2. For “is this guest in a journey?”, use `flow_sessions_list` with `contact_id`.
-3. Do not invent create/start/pause tools — not exposed on MCP yet.
+| User ask | Do |
+|---|---|
+| 有哪些旅程 | `flows_list` |
+| 某一支細節 | `flow_get`（只報工具回傳欄位） |
+| 某人是否在旅程中 | `flow_sessions_list` + `contact_id` |
+| 建立／啟動／暫停 | **後台** — MCP 無 create/start/pause；勿發明工具名 |
+
+## Guardrails
+
+- Report only statuses returned by the tools.
+- Do not claim publish/pause succeeded via MCP.
 """,
     )
 
@@ -491,7 +615,7 @@ description: Inspect {disp} multi-step DM journeys (flows_list, flow_get, flow_s
         f"{key}-inbox/SKILL.md",
         f"""---
 name: {key}-inbox
-description: Browse {disp} Unified Inbox threads (inbox_list, conversation_get). Read-only message-center triage.
+description: Browse {disp} Unified Inbox threads (inbox_list, conversation_get). Read-only message-center triage — not period corpus search.
 ---
 
 # Skill: {key}-inbox
@@ -500,19 +624,27 @@ description: Browse {disp} Unified Inbox threads (inbox_list, conversation_get).
 
 ## MCP tools
 
-- `inbox_list` — recent threads. Params: optional `folder` (`open|pending|done`), `platform`, `q`, `limit` 1–50.
-- `conversation_get` — one contact summary + recent messages. Required `contact_id`; optional `limit` 1–50 (default 30).
+- `inbox_list` — recent **activity** threads. Params: optional `folder` (`open|pending|done`), `platform`, `q`, `limit` 1–50.
+- `conversation_get` — one contact summary + **recent** messages. Required `contact_id`; optional `limit` 1–50 (default 30).
+
+## Use when / Do not use when
+
+| Use when | Do not use when |
+|---|---|
+| 誰最近找過、收件匣分流 | 情緒占比／期間主題統計 → `{key}-investigate` |
+| 打開某一線近期對話 | 把 list 當「全專案歷史普查」 |
+| 確認某人目前資料夾／平台 | 無關鍵字的全庫搜訊（我們沒有這種工具） |
 
 ## Workflow
 
 1. Triage with `inbox_list` (folder/platform/name as needed).
 2. Open a thread with `conversation_get`.
-3. For keyword / period search across the project, hand off to `{key}-investigate` (`messages_search`).
+3. For keyword / period evidence across the project, hand off to `{key}-investigate` (`messages_search`).
 
 ## Guardrails
 
-- Read-only. Sending messages belongs in `{key}-messaging` (preview → propose → approve).
-- Do not treat `inbox_list` as a full historical census of every contact.
+- Read-only. Sending → `{key}-messaging` (preview → propose → approve).
+- `inbox_list` ≠ message `createdAt` corpus; it is activity-oriented.
 """,
     )
 
@@ -520,31 +652,39 @@ description: Browse {disp} Unified Inbox threads (inbox_list, conversation_get).
         f"{key}-investigate/SKILL.md",
         f"""---
 name: {key}-investigate
-description: Search {disp} inbox message bodies with messages_search (read-only, max 30-day window). Use for keyword investigation before drafting replies or FAQ.
+description: Search {disp} inbox message bodies with messages_search (read-only, max 30-day window). Load investigate-playbook for sample/FAQ rules.
 ---
 
 # Skill: {key}-investigate
 
-**Prerequisite:** `{key}-universal-workflow` + `references/error-recovery.md`.
+**Prerequisite:** `{key}-universal-workflow` + `references/error-recovery.md`.  
+**On demand:** `references/investigate-playbook.md`, `references/timezone-policy.md`.
 
 ## MCP tools
 
 - `messages_search` — required `q`; optional `contact_id`, `days` (1–30, default 14), `limit` 1–50.
 
+## Use when / Do not use when
+
+| Use when | Do not use when |
+|---|---|
+| 關鍵字／客訴主題／FAQ 草稿證據 | 「誰找過」→ `{key}-inbox` |
+| 明確期間（轉成 `days`≤30） | 把 `conversation_get` 當整月語料 |
+| 需可追溯引用的訊息片段 | 無 `q` 的空搜尋（API 必填關鍵字） |
+
 ## Workflow
 
-1. Always pass a real keyword in `q`. Prefer concrete nouns (product names, order ids) over vague verbs.
-2. If the user names a period, set `days` explicitly (cap 30). Do not claim coverage beyond the window returned in `since` / `days`.
-3. Cite message ids / contact names from the result; do not invent quotes.
-4. For opening a full recent thread after a hit, use `{key}-inbox` → `conversation_get`.
-5. If the user wants a reply, hand off to `{key}-messaging` (preview-gate) — do not send from this skill.
-6. If hits suggest a reusable FAQ, propose drafting knowledge text for the user to confirm; do not invent `knowledge_upsert` if missing from `tools/list`.
+1. Load `references/investigate-playbook.md` for caps and honesty labels.
+2. Always pass a real keyword in `q`. Prefer concrete nouns over vague verbs.
+3. If the user names a period, set `days` explicitly (cap 30). Report returned `since` / `count`.
+4. Cite message ids / contact names from the result; do not invent quotes.
+5. After a hit, optional `{key}-inbox` → `conversation_get` for recent context.
+6. Reply drafting → `{key}-messaging`. FAQ draft → playbook thin path + optional `knowledge_search`.
 
 ## Guardrails
 
-- Read-only. No send / broadcast / CRM writes here.
-- Hard max **30 days** — split longer asks into multiple windows and say so.
-- Timezone for windows is server UTC unless the tool payload says otherwise; say so if the user asks.
+- Read-only. Prefer ≤5 searches per ask before summarizing.
+- Hard max **30 days** — split longer asks; label coverage as 樣本／部分 when limited.
 """,
     )
 
@@ -577,7 +717,7 @@ description: Preview then propose a 1:1 plain-text message on {disp} (message_pr
 ## Guardrails
 
 - Plain text only via MCP. Cards / carousels / images → dashboard.
-- Never skip preview or user confirmation.
+- Never skip preview or user confirmation (stricter than “text-only skip preview” products).
 - If `send_supported` is false, do not call `message_send`.
 """,
     )
@@ -586,16 +726,17 @@ description: Preview then propose a 1:1 plain-text message on {disp} (message_pr
         f"{key}-broadcast/SKILL.md",
         f"""---
 name: {key}-broadcast
-description: List broadcasts, preview audience size, and propose draft broadcasts on {disp} (broadcast_list, broadcast_audience_preview, broadcast_create).
+description: List broadcasts, preview audience size, and propose draft broadcasts on {disp}. Read broadcast-status-cases before interpreting status.
 ---
 
 # Skill: {key}-broadcast
 
-**Prerequisite:** `{key}-universal-workflow` + `references/write-lifecycle.md` for create.
+**Prerequisite:** `{key}-universal-workflow` + `references/write-lifecycle.md` for create.  
+**On demand:** `references/broadcast-status-cases.md`.
 
 ## Read
 
-- `broadcast_list` — recent tasks (`limit` 1–50)
+- `broadcast_list` — recent tasks (`limit` 1–50) — interpret with status-cases
 - `broadcast_audience_preview` — eligible counts for `platform` + `target_type` (`all|tag`) + optional `target_tag`
 
 ## Write / proposal
@@ -604,9 +745,10 @@ description: List broadcasts, preview audience size, and propose draft broadcast
 
 ## Workflow
 
-1. Preview audience before creating.
+1. Preview audience before creating. **`tags_list` count ≠ eligible_count.**
 2. Confirm name / platform / target / message.
 3. Call `broadcast_create`; explain draft ≠ sent.
+4. When reporting progress, follow `references/broadcast-status-cases.md` — never auto-resend failures.
 """,
     )
 
@@ -816,7 +958,17 @@ name: search-messages
 description: 使用 {key}-investigate 搜尋訊息內文
 ---
 
-使用 {key}-investigate（messages_search）搜尋訊息。若我還沒給關鍵字，先問我要搜什麼；時間窗預設 14 天、最多 30 天。
+使用 {key}-investigate（messages_search）搜尋訊息。若我還沒給關鍵字，先問我要搜什麼；時間窗預設 14 天、最多 30 天。遵守 investigate-playbook：可追溯引用、標明樣本覆蓋。
+""",
+    )
+    command(
+        "investigate-week.md",
+        f"""---
+name: investigate-week
+description: 使用 {key}-investigate 做近 7 日關鍵字調查摘要
+---
+
+使用 {key}-investigate：先問我要查的關鍵字（可多個主題分開搜），`days=7`，依 investigate-playbook 給我可追溯摘要（勿假裝儀表板圖表）。需要回覆時再轉 {key}-messaging。
 """,
     )
     command(
@@ -856,7 +1008,7 @@ name: draft-broadcast
 description: 使用 {key}-broadcast 預覽受眾並提議建立群發草稿
 ---
 
-使用 {key}-broadcast：先 broadcast_audience_preview 給我可送人數，確認文案／平台／對象後再 broadcast_create。提醒我核准後仍是草稿，要到群發頁才發送。
+使用 {key}-broadcast：先 broadcast_audience_preview 給我 eligible_count（不要用 tags_list 人數代替），確認文案／平台／對象後再 broadcast_create。提醒我核准後仍是草稿，要到群發頁才發送；狀態解讀看 broadcast-status-cases。
 """,
     )
     command(
@@ -934,8 +1086,8 @@ See repo root: [`docs/我們的Skill設計.md`](../../docs/我們的Skill設計.
 Includes:
 
 - Skills: connect, session, charter/policy, contacts, inbox, investigate, messaging, broadcast, flows, reservations, dispatch, knowledge, memory, ops
-- References: merchant-charter, write-lifecycle, brand-isolation, product-terms, error-recovery
-- Commands: validate, whoami, contacts, tags, inbox, search-messages, broadcasts, draft-broadcast, draft-message, proposals, flows, summary, reservations, dispatch, knowledge, escalate, explain-capabilities
+- References: merchant-charter, write-lifecycle, timezone-policy, investigate-playbook, broadcast-status-cases, brand-isolation, product-terms, error-recovery
+- Commands: validate, whoami, contacts, tags, inbox, search-messages, investigate-week, broadcasts, draft-broadcast, draft-message, proposals, flows, summary, reservations, dispatch, knowledge, escalate, explain-capabilities
 - Host manifests: Cursor, Claude, Codex, Agents
 
 No product source code. Data stays on `{domain}`.
@@ -1050,6 +1202,13 @@ You can also re-Authenticate after Logout on the agent side if the token is stal
         f"""# Changelog
 
 ## {VERSION}
+
+- Skill shell learning pass: `timezone-policy`, `investigate-playbook`, `broadcast-status-cases`.
+- Thicker inbox／investigate／broadcast／flows boundaries; product-terms dashboard↔MCP map.
+- Commands: `investigate-week`; harden draft-broadcast／search-messages wording.
+- No new MCP tools — mechanisms only (no ChatGroup / rich-send copy).
+
+## 1.7.0
 
 - Session/ops: `mcp_whoami`, `mcp_usage_summary`, `proposals_list`.
 - Messaging preview-gate: `message_preview` → `message_send` requires matching `preview_token` (plain text only).

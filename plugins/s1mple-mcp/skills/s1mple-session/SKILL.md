@@ -15,7 +15,7 @@ This skill uses the `s1mple` MCP server. Authentication is managed by the agent 
 - Prefer `tools/list` (or the host equivalent) to confirm tools are visible.
 - Call `mcp_whoami` — brand, project name, timezone, allowlisted tool names (read-only).
 - Optionally `workspace_summary` — contact / reservation / dispatch counts.
-- Optionally `mcp_usage_summary` — recent MCP call counts by actor/tool (not a billing wallet).
+- Optionally `mcp_usage_summary` — **only when the user asks** about volume／呼叫次數 (call counts, not a billing wallet).
 
 ## Workflow
 

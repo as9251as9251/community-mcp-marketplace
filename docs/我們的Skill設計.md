@@ -71,10 +71,15 @@ Skill／Command 只能對應後端 **已上線** 的 MCP 工具。
 
 | 檔案 | 用途 |
 |---|---|
-| `product-terms.md` | 對商家怎麼講 |
-| `write-lifecycle.md` | 確認 → 提議 → 核准 |
+| `product-terms.md` | 對商家怎麼講＋後台↔MCP 對照 |
+| `write-lifecycle.md` | 確認 → 提議 → 核准（含 message preview-gate） |
+| `timezone-policy.md` | 口語時間 → MCP instant 編碼 |
+| `investigate-playbook.md` | 搜訊樣本上限／可追溯／FAQ 薄流程 |
+| `broadcast-status-cases.md` | 群發狀態怎麼說、禁止自動重送 |
 | `brand-isolation.md` | 網域／server 硬邊界 |
 | `error-recovery.md` | 401／429／缺工具／5xx |
+
+從公開競品 skill **學機制、不抄目錄**：inbox≠search、時區政策、調查誠實覆蓋、群發 golden cases。不抄 ChatGroup／對方工具名／富訊息直送。
 
 ## 4. Command 怎麼設計
 
@@ -86,9 +91,9 @@ Command 是 **一句話快捷鍵**，不是第二套業務系統。
 - 文案直接點名要用哪個 skill  
 - 會寫入的 command（例如轉真人）必須內建「先確認」  
 
-目前一組：
+目前一組（節錄）：
 
-`validate-*-setup` · `list-contacts` · `project-summary` · `list-reservations` · `list-dispatch` · `search-knowledge` · `escalate-human`
+`validate-*-setup` · `whoami` · `list-inbox` · `search-messages` · `investigate-week` · `draft-message` · `draft-broadcast` · `list-proposals` · `project-summary` · …
 
 ## 5. 與後端的契約
 

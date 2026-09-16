@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.8.0
+
+- Skill shell learning pass: `timezone-policy`, `investigate-playbook`, `broadcast-status-cases`.
+- Thicker inbox／investigate／broadcast／flows boundaries; product-terms dashboard↔MCP map.
+- Commands: `investigate-week`; harden draft-broadcast／search-messages wording.
+- No new MCP tools — mechanisms only (no ChatGroup / rich-send copy).
+
 ## 1.7.0
 
 - Session/ops: `mcp_whoami`, `mcp_usage_summary`, `proposals_list`.

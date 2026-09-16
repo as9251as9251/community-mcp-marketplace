@@ -13,10 +13,16 @@ Canonical design: repo `docs/我們的Skill設計.md` · local summary `referenc
 ## Mandatory references
 
 - `references/merchant-charter.md` — our product rules in one page
-- `references/product-terms.md` — customer-facing wording
-- `references/write-lifecycle.md` — confirm → propose → approve
+- `references/product-terms.md` — customer-facing wording + dashboard↔MCP map
+- `references/write-lifecycle.md` — confirm → propose → approve (+ message preview-gate)
+- `references/timezone-policy.md` — wall-clock → MCP instant encoding
 - `references/brand-isolation.md` — `real` / `realvip.cc` only
 - `references/error-recovery.md` — auth / 429 / missing tools
+
+On-demand (domain):
+
+- `references/investigate-playbook.md` — when searching / analysing messages
+- `references/broadcast-status-cases.md` — when reading or drafting broadcasts
 
 ## Mandatory core
 
