@@ -7,7 +7,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 PLUGINS = ROOT / "plugins"
-VERSION = "1.6.0"
+VERSION = "1.7.0"
 
 BRANDS = [
     {
@@ -75,7 +75,16 @@ Full design (repo root): `docs/我們的Skill設計.md`
 
 Applies to: `memory_upsert`, `contact_add_tag`, `contact_append_note`,
 `reservation_update_status`, `reservation_reschedule`, `dispatch_create`,
-`escalate_to_human`.
+`escalate_to_human`, `message_send`, `broadcast_create`.
+
+### message_send preview-gate
+
+1. Call `message_preview` (same `contact_id` + `text`).
+2. Show the preview body to the user; wait for explicit confirmation.
+3. Only then call `message_send` with the same text **and** `preview_token`.
+4. Dashboard approval is still required before the guest receives the message.
+
+Rich cards / carousels are **not** sendable via MCP — use the {disp} dashboard.
 
 ## After the tool returns
 
@@ -126,7 +135,7 @@ Do **not** ask for tokens or paste keys. Guide re-Authenticate:
 | Codex | Uninstall → reinstall from marketplace |
 | Other | MCP settings for `{key}` → Authenticate |
 
-Then retry with `{key}-session` (`workspace_summary`).
+Then retry with `{key}-session` (`mcp_whoami` or `workspace_summary`).
 
 ## Network / `5xx` / timeout
 
@@ -330,7 +339,7 @@ Also read `references/brand-isolation.md`.
         f"{key}-session/SKILL.md",
         f"""---
 name: {key}-session
-description: Validate {disp} MCP session by listing tools and calling workspace_summary. Use when verifying authentication, after OAuth, or when other {disp} skills fail with 401/403/429.
+description: Validate {disp} MCP session via mcp_whoami / workspace_summary and optional usage. Use when verifying authentication, after OAuth, or when other {disp} skills fail with 401/403/429.
 ---
 
 # Skill: {key}-session
@@ -343,15 +352,15 @@ This skill uses the `{key}` MCP server. Authentication is managed by the agent t
 ## MCP tools (session check)
 
 - Prefer `tools/list` (or the host equivalent) to confirm tools are visible.
-- Call `workspace_summary` — project name plus contact / reservation / dispatch counts (read-only). No arguments.
+- Call `mcp_whoami` — brand, project name, timezone, allowlisted tool names (read-only).
+- Optionally `workspace_summary` — contact / reservation / dispatch counts.
+- Optionally `mcp_usage_summary` — recent MCP call counts by actor/tool (not a billing wallet).
 
 ## Workflow
 
 1. Confirm the `{key}` MCP server is connected.
-2. Call `workspace_summary`.
-3. If it succeeds, briefly tell the user which project is bound and what you can help with
-   (contacts, reservations, dispatch, knowledge, memory, proposed writes needing approval).
-4. On auth failure, follow `references/error-recovery.md`, then retry `workspace_summary`.
+2. Call `mcp_whoami`. Tell the user which brand/project is bound and roughly what tools are allowed.
+3. On auth failure, follow `references/error-recovery.md`, then retry `mcp_whoami`.
 
 ## Guardrails
 
@@ -397,6 +406,8 @@ Canonical design: repo `docs/我們的Skill設計.md` · local summary `referenc
 | User says | Route to |
 |---|---|
 | 連線／驗證／登入 MCP／設定好了嗎 | `{key}-session` |
+| 用量／呼叫次數 | `{key}-session`（mcp_usage_summary） |
+| 待核准／提案佇列 | `{key}-ops`（proposals_list） |
 | 你能做什麼／憲章／邊界 | 本 skill ＋ `references/merchant-charter.md` |
 | 聯絡人／客戶／查誰 | `{key}-contacts` |
 | 標籤目錄 | `{key}-contacts`（tags_list） |
@@ -500,7 +511,7 @@ description: Browse {disp} Unified Inbox threads (inbox_list, conversation_get).
 
 ## Guardrails
 
-- Read-only. Sending messages is not in this skill (no MCP send tool yet).
+- Read-only. Sending messages belongs in `{key}-messaging` (preview → propose → approve).
 - Do not treat `inbox_list` as a full historical census of every contact.
 """,
     )
@@ -509,7 +520,7 @@ description: Browse {disp} Unified Inbox threads (inbox_list, conversation_get).
         f"{key}-investigate/SKILL.md",
         f"""---
 name: {key}-investigate
-description: Search {disp} inbox message bodies with messages_search (read-only, max 30-day window).
+description: Search {disp} inbox message bodies with messages_search (read-only, max 30-day window). Use for keyword investigation before drafting replies or FAQ.
 ---
 
 # Skill: {key}-investigate
@@ -522,15 +533,18 @@ description: Search {disp} inbox message bodies with messages_search (read-only,
 
 ## Workflow
 
-1. Always pass a real keyword in `q`.
+1. Always pass a real keyword in `q`. Prefer concrete nouns (product names, order ids) over vague verbs.
 2. If the user names a period, set `days` explicitly (cap 30). Do not claim coverage beyond the window returned in `since` / `days`.
 3. Cite message ids / contact names from the result; do not invent quotes.
 4. For opening a full recent thread after a hit, use `{key}-inbox` → `conversation_get`.
+5. If the user wants a reply, hand off to `{key}-messaging` (preview-gate) — do not send from this skill.
+6. If hits suggest a reusable FAQ, propose drafting knowledge text for the user to confirm; do not invent `knowledge_upsert` if missing from `tools/list`.
 
 ## Guardrails
 
 - Read-only. No send / broadcast / CRM writes here.
 - Hard max **30 days** — split longer asks into multiple windows and say so.
+- Timezone for windows is server UTC unless the tool payload says otherwise; say so if the user asks.
 """,
     )
 
@@ -538,7 +552,7 @@ description: Search {disp} inbox message bodies with messages_search (read-only,
         f"{key}-messaging/SKILL.md",
         f"""---
 name: {key}-messaging
-description: Propose a 1:1 text message to a {disp} contact via message_send (human approval required before send).
+description: Preview then propose a 1:1 plain-text message on {disp} (message_preview → message_send; human approval required).
 ---
 
 # Skill: {key}-messaging
@@ -547,19 +561,24 @@ description: Propose a 1:1 text message to a {disp} contact via message_send (hu
 
 ## MCP tools
 
-- `message_send` — **proposal**. Required `contact_id`, `text` (plain text only).
+- `message_preview` — **read-only gate**. Required `contact_id`, `text`. Returns preview + `preview_token` when sendable.
+- `message_send` — **proposal**. Required `contact_id`, `text`, `preview_token` (same text as preview).
+- Optional: `proposals_list` to see pending approvals.
 
 ## Workflow
 
 1. Resolve `contact_id` via `{key}-inbox` / `{key}-contacts` if needed.
-2. Confirm recipient + full message text with the user.
-3. Call `message_send`. Tell the user it is pending inbox approval and will send only after approve.
-4. Do not claim the guest already received it until approval/execution succeeds.
+2. Draft text; call `message_preview`.
+3. Show the preview body to the user; wait for explicit confirmation.
+4. Call `message_send` with the **same** `contact_id` + `text` + `preview_token`.
+5. Tell the user it is pending inbox approval — guest has **not** received it yet.
+6. Do not claim delivery until approval/execution succeeds.
 
 ## Guardrails
 
-- Text only. No images/stickers/cards via this skill yet.
-- Never skip confirmation.
+- Plain text only via MCP. Cards / carousels / images → dashboard.
+- Never skip preview or user confirmation.
+- If `send_supported` is false, do not call `message_send`.
 """,
     )
 
@@ -695,16 +714,19 @@ description: List or upsert internal guest memory on {disp} (memory_list, memory
         f"{key}-ops/SKILL.md",
         f"""---
 name: {key}-ops
-description: {disp} project overview via workspace_summary, and router to domain skills for contacts/reservations/dispatch/knowledge/memory.
+description: {disp} project overview via mcp_whoami / workspace_summary / proposals_list, and router to domain skills.
 ---
 
 # Skill: {key}-ops
 
 **Prerequisite:** `{key}-universal-workflow`.
 
-## Primary tool
+## Primary tools
 
+- `mcp_whoami` — brand / project / allowlisted tools
 - `workspace_summary` — contacts / reservations / dispatch counts (read-only)
+- `proposals_list` — pending (or filtered) write proposals awaiting dashboard approval
+- `mcp_usage_summary` — optional call-volume snapshot
 
 ## When to route elsewhere
 
@@ -735,6 +757,36 @@ description: 使用 {key}-session 驗證 MCP 設定，並簡短說明可用能�
 ---
 
 使用 {key}-session 驗證我的 MCP 設定。確認可用後，簡短說明一下你能幫我做什麼。
+""",
+    )
+    command(
+        "whoami.md",
+        f"""---
+name: whoami
+description: 使用 {key}-session 確認目前 MCP 專案與允許工具
+---
+
+使用 {key}-session 呼叫 mcp_whoami，告訴我目前綁定的品牌／專案與可用工具概況。
+""",
+    )
+    command(
+        "list-proposals.md",
+        f"""---
+name: list-proposals
+description: 使用 {key}-ops 列出待核准提案
+---
+
+使用 {key}-ops 的 proposals_list 列出 pending 寫入提案（可依聯絡人篩選）。
+""",
+    )
+    command(
+        "draft-message.md",
+        f"""---
+name: draft-message
+description: 使用 {key}-messaging 預覽並提議發送純文字私訊
+---
+
+使用 {key}-messaging：先 message_preview，把預覽給我確認，再 message_send（帶 preview_token）。提醒我後台核准前客人收不到。
 """,
     )
     command(
@@ -814,7 +866,7 @@ name: project-summary
 description: 使用 {key}-ops 取得專案摘要
 ---
 
-使用 {key}-ops 呼叫 workspace_summary，給我一份專案摘要（聯絡人／預約／派工數量）。
+使用 {key}-ops 呼叫 mcp_whoami 與 workspace_summary，給我專案摘要（品牌／聯絡人／預約／派工；可順便看 proposals_list）。
 """,
     )
     command(
@@ -883,7 +935,7 @@ Includes:
 
 - Skills: connect, session, charter/policy, contacts, inbox, investigate, messaging, broadcast, flows, reservations, dispatch, knowledge, memory, ops
 - References: merchant-charter, write-lifecycle, brand-isolation, product-terms, error-recovery
-- Commands: validate, contacts, tags, inbox, search-messages, broadcasts, draft-broadcast, flows, summary, reservations, dispatch, knowledge, escalate, explain-capabilities
+- Commands: validate, whoami, contacts, tags, inbox, search-messages, broadcasts, draft-broadcast, draft-message, proposals, flows, summary, reservations, dispatch, knowledge, escalate, explain-capabilities
 - Host manifests: Cursor, Claude, Codex, Agents
 
 No product source code. Data stays on `{domain}`.
@@ -999,6 +1051,12 @@ You can also re-Authenticate after Logout on the agent side if the token is stal
 
 ## {VERSION}
 
+- Session/ops: `mcp_whoami`, `mcp_usage_summary`, `proposals_list`.
+- Messaging preview-gate: `message_preview` → `message_send` requires matching `preview_token` (plain text only).
+- Skills: session/ops/messaging/investigate thickened; commands `whoami`, `list-proposals`, `draft-message`.
+
+## 1.6.0
+
 - P2 MCP: `tags_list`, `contacts_search`, `flows_list`, `flow_get`, `flow_sessions_list`.
 - Skills: expand contacts; add `*-flows`; commands `list-tags`, `list-flows`.
 
@@ -1094,11 +1152,11 @@ community-mcp-marketplace/
 
 | Skill | Tools |
 |---|---|
-| session / ops | `workspace_summary` |
+| session / ops | `mcp_whoami`, `workspace_summary`, `mcp_usage_summary`, `proposals_list` |
 | contacts | `contacts_list`, `contacts_search`, `contact_get`, `tags_list` |
 | inbox | `inbox_list`, `conversation_get` |
 | investigate | `messages_search` |
-| messaging | `message_send`（提案） |
+| messaging | `message_preview`（唯讀門檻）, `message_send`（提案，需 preview_token） |
 | broadcast | `broadcast_list`, `broadcast_audience_preview`, `broadcast_create`（草稿提案） |
 | flows | `flows_list`, `flow_get`, `flow_sessions_list` |
 | reservations | `reservations_list`, `reservation_*` |

@@ -11,7 +11,7 @@ Do **not** ask for tokens or paste keys. Guide re-Authenticate:
 | Codex | Uninstall → reinstall from marketplace |
 | Other | MCP settings for `s1mple` → Authenticate |
 
-Then retry with `s1mple-session` (`workspace_summary`).
+Then retry with `s1mple-session` (`mcp_whoami` or `workspace_summary`).
 
 ## Network / `5xx` / timeout
 

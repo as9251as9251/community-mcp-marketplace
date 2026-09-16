@@ -8,7 +8,16 @@
 
 Applies to: `memory_upsert`, `contact_add_tag`, `contact_append_note`,
 `reservation_update_status`, `reservation_reschedule`, `dispatch_create`,
-`escalate_to_human`.
+`escalate_to_human`, `message_send`, `broadcast_create`.
+
+### message_send preview-gate
+
+1. Call `message_preview` (same `contact_id` + `text`).
+2. Show the preview body to the user; wait for explicit confirmation.
+3. Only then call `message_send` with the same text **and** `preview_token`.
+4. Dashboard approval is still required before the guest receives the message.
+
+Rich cards / carousels are **not** sendable via MCP — use the REAL dashboard.
 
 ## After the tool returns
 

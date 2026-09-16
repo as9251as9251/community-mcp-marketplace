@@ -1,6 +1,6 @@
 ---
 name: real-messaging
-description: Propose a 1:1 text message to a REAL contact via message_send (human approval required before send).
+description: Preview then propose a 1:1 plain-text message on REAL (message_preview → message_send; human approval required).
 ---
 
 # Skill: real-messaging
@@ -9,16 +9,21 @@ description: Propose a 1:1 text message to a REAL contact via message_send (huma
 
 ## MCP tools
 
-- `message_send` — **proposal**. Required `contact_id`, `text` (plain text only).
+- `message_preview` — **read-only gate**. Required `contact_id`, `text`. Returns preview + `preview_token` when sendable.
+- `message_send` — **proposal**. Required `contact_id`, `text`, `preview_token` (same text as preview).
+- Optional: `proposals_list` to see pending approvals.
 
 ## Workflow
 
 1. Resolve `contact_id` via `real-inbox` / `real-contacts` if needed.
-2. Confirm recipient + full message text with the user.
-3. Call `message_send`. Tell the user it is pending inbox approval and will send only after approve.
-4. Do not claim the guest already received it until approval/execution succeeds.
+2. Draft text; call `message_preview`.
+3. Show the preview body to the user; wait for explicit confirmation.
+4. Call `message_send` with the **same** `contact_id` + `text` + `preview_token`.
+5. Tell the user it is pending inbox approval — guest has **not** received it yet.
+6. Do not claim delivery until approval/execution succeeds.
 
 ## Guardrails
 
-- Text only. No images/stickers/cards via this skill yet.
-- Never skip confirmation.
+- Plain text only via MCP. Cards / carousels / images → dashboard.
+- Never skip preview or user confirmation.
+- If `send_supported` is false, do not call `message_send`.

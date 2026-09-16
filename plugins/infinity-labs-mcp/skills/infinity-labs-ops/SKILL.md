@@ -1,15 +1,18 @@
 ---
 name: infinity-labs-ops
-description: INFINITY LABS project overview via workspace_summary, and router to domain skills for contacts/reservations/dispatch/knowledge/memory.
+description: INFINITY LABS project overview via mcp_whoami / workspace_summary / proposals_list, and router to domain skills.
 ---
 
 # Skill: infinity-labs-ops
 
 **Prerequisite:** `infinity-labs-universal-workflow`.
 
-## Primary tool
+## Primary tools
 
+- `mcp_whoami` — brand / project / allowlisted tools
 - `workspace_summary` — contacts / reservations / dispatch counts (read-only)
+- `proposals_list` — pending (or filtered) write proposals awaiting dashboard approval
+- `mcp_usage_summary` — optional call-volume snapshot
 
 ## When to route elsewhere
 

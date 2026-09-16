@@ -11,7 +11,7 @@ Includes:
 
 - Skills: connect, session, charter/policy, contacts, inbox, investigate, messaging, broadcast, flows, reservations, dispatch, knowledge, memory, ops
 - References: merchant-charter, write-lifecycle, brand-isolation, product-terms, error-recovery
-- Commands: validate, contacts, tags, inbox, search-messages, broadcasts, draft-broadcast, flows, summary, reservations, dispatch, knowledge, escalate, explain-capabilities
+- Commands: validate, whoami, contacts, tags, inbox, search-messages, broadcasts, draft-broadcast, draft-message, proposals, flows, summary, reservations, dispatch, knowledge, escalate, explain-capabilities
 - Host manifests: Cursor, Claude, Codex, Agents
 
 No product source code. Data stays on `realvip.cc`.

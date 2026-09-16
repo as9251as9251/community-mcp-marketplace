@@ -20,5 +20,5 @@ description: Browse INFINITY LABS Unified Inbox threads (inbox_list, conversatio
 
 ## Guardrails
 
-- Read-only. Sending messages is not in this skill (no MCP send tool yet).
+- Read-only. Sending messages belongs in `infinity-labs-messaging` (preview → propose → approve).
 - Do not treat `inbox_list` as a full historical census of every contact.

@@ -1,7 +1,7 @@
 {
   "name": "s1mple-mcp",
   "displayName": "s1mple MCP",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "description": "Workflow skills and hosted MCP for s1mple. Install, then connect the bundled MCP through OAuth.",
   "author": {
     "name": "Community MCP",

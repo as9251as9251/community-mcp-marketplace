@@ -20,5 +20,5 @@ description: Browse REAL Unified Inbox threads (inbox_list, conversation_get). R
 
 ## Guardrails
 
-- Read-only. Sending messages is not in this skill (no MCP send tool yet).
+- Read-only. Sending messages belongs in `real-messaging` (preview → propose → approve).
 - Do not treat `inbox_list` as a full historical census of every contact.

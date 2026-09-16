@@ -11,7 +11,7 @@ Do **not** ask for tokens or paste keys. Guide re-Authenticate:
 | Codex | Uninstall → reinstall from marketplace |
 | Other | MCP settings for `infinity-labs` → Authenticate |
 
-Then retry with `infinity-labs-session` (`workspace_summary`).
+Then retry with `infinity-labs-session` (`mcp_whoami` or `workspace_summary`).
 
 ## Network / `5xx` / timeout
 

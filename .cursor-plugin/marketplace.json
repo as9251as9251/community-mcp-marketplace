@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "Thin public shells that connect agents to REAL / s1mple / INFINITY LABS MCP via OAuth Authenticate. Domain skills + references included. No product source code.",
-    "version": "1.6.0",
+    "version": "1.7.0",
     "pluginRoot": "plugins"
   },
   "plugins": [

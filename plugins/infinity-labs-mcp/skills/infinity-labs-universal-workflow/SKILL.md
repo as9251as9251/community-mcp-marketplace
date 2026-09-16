@@ -31,6 +31,8 @@ Canonical design: repo `docs/我們的Skill設計.md` · local summary `referenc
 | User says | Route to |
 |---|---|
 | 連線／驗證／登入 MCP／設定好了嗎 | `infinity-labs-session` |
+| 用量／呼叫次數 | `infinity-labs-session`（mcp_usage_summary） |
+| 待核准／提案佇列 | `infinity-labs-ops`（proposals_list） |
 | 你能做什麼／憲章／邊界 | 本 skill ＋ `references/merchant-charter.md` |
 | 聯絡人／客戶／查誰 | `infinity-labs-contacts` |
 | 標籤目錄 | `infinity-labs-contacts`（tags_list） |
