@@ -1275,7 +1275,7 @@ You can also re-Authenticate after Logout on the agent side if the token is stal
 
 → **[docs/我們的Skill設計.md](./docs/我們的Skill設計.md)**
 
-重點不是追別人的功能清單，而是：
+本包憲章：
 
 - 多品牌隔離  
 - OAuth 綁專案  
