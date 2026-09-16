@@ -2,11 +2,16 @@
 
 Points agents at **https://s1mple-pro.com/api/mcp/v1/jsonrpc** and uses OAuth Authenticate.
 
+Built on **our** merchant charter (not a generic CRM skill pack):
+multi-brand isolation, OAuth project scope, read-first, proposal writes.
+
+See repo root: [`docs/我們的Skill設計.md`](../../docs/我們的Skill設計.md)
+
 Includes:
 
-- Skills: connect, session, policy, contacts, reservations, dispatch, knowledge, memory, ops
-- References: write lifecycle, brand isolation, product terms, error recovery
-- Commands: validate, contacts, summary, reservations, dispatch, knowledge, escalate
+- Skills: connect, session, charter/policy, contacts, reservations, dispatch, knowledge, memory, ops
+- References: merchant-charter, write-lifecycle, brand-isolation, product-terms, error-recovery
+- Commands: validate, contacts, summary, reservations, dispatch, knowledge, escalate, explain-capabilities
 - Host manifests: Cursor, Claude, Codex, Agents
 
 No product source code. Data stays on `s1mple-pro.com`.
@@ -15,5 +20,5 @@ No product source code. Data stays on `s1mple-pro.com`.
 
 1. Install this plugin
 2. Authenticate the `s1mple` MCP server
-3. Run **validate-s1mple-setup**
+3. Run **validate-s1mple-setup** or **explain-capabilities**
 4. Revoke later in s1mple dashboard → MCP / connected apps

@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.0
+
+- Publish our own skill design: `docs/我們的Skill設計.md` (merchant charter).
+- Add `references/merchant-charter.md` and command `explain-capabilities`.
+- Reframe policy skill as merchant charter (read-first, proposal writes, multi-brand).
+
 ## 1.2.0
 
 - Split domain skills: reservations, dispatch, knowledge, memory (ops becomes overview + router).

@@ -7,7 +7,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 PLUGINS = ROOT / "plugins"
-VERSION = "1.2.0"
+VERSION = "1.3.0"
 
 BRANDS = [
     {
@@ -52,6 +52,19 @@ def write_json(path: Path, data: object) -> None:
 
 def references_bodies(key: str, disp: str, domain: str) -> dict[str, str]:
     return {
+        "merchant-charter.md": f"""# {disp} merchant charter (summary)
+
+This plugin follows **Community MCP** rules — multi-brand merchant ops, not a generic CRM clone.
+
+1. **One brand** — MCP `{key}` on `{domain}` only. Never cross brands.
+2. **OAuth project scope** — tools only see the project chosen at consent.
+3. **Read first** — summary / list / search before any write.
+4. **Proposal writes** — confirm intent → call tool → say dashboard approval may still be required.
+5. **No invented tools** — if missing from `tools/list`, it is disabled for this project.
+6. **No secrets in chat** — never ask for tokens, passwords, or OTP; use Authenticate recovery.
+
+Full design (repo root): `docs/我們的Skill設計.md`
+""",
         "write-lifecycle.md": f"""# Write lifecycle ({disp})
 
 ## Before any write / proposal tool
@@ -353,45 +366,52 @@ This skill uses the `{key}` MCP server. Authentication is managed by the agent t
         f"{key}-universal-workflow/SKILL.md",
         f"""---
 name: {key}-universal-workflow
-description: Shared {disp} policy for customer language, write confirmation, brand isolation, and errors. Non-operational prerequisite for every {disp} workflow skill.
+description: {disp} merchant charter policy — language, proposal writes, brand isolation, errors. Prerequisite for every {disp} workflow skill.
 ---
 
-# Skill: {key}-universal-workflow
+# Skill: {key}-universal-workflow（商家憲章）
 
-This is a **policy** skill, not an operational workflow. Read it before other `{key}-*` skills use tools.
+This is the **{disp} merchant charter** skill (policy), not an operational workflow.
+Read before other `{key}-*` skills use tools.
 
-## Mandatory references (read as needed)
+Canonical design: repo `docs/我們的Skill設計.md` · local summary `references/merchant-charter.md`.
 
+## Mandatory references
+
+- `references/merchant-charter.md` — our product rules in one page
 - `references/product-terms.md` — customer-facing wording
-- `references/write-lifecycle.md` — confirm before writes; proposal ≠ live
+- `references/write-lifecycle.md` — confirm → propose → approve
 - `references/brand-isolation.md` — `{key}` / `{domain}` only
 - `references/error-recovery.md` — auth / 429 / missing tools
 
 ## Mandatory core
 
-1. **Customer language first** — use product terms from the reference.
+1. **Read first, propose second** — lists/summary/search before writes.
 2. **Confirm before writes** — follow write-lifecycle for every proposal tool.
-3. **Allowlist** — if a tool is missing from `tools/list`, it is disabled; do not invent names.
-4. **Brand isolation** — only MCP `{key}` on `{domain}`.
+3. **Proposal ≠ live** — remind dashboard approval unless the result says applied.
+4. **Allowlist** — missing from `tools/list` means disabled; do not invent names.
+5. **Brand isolation** — only MCP `{key}` on `{domain}`.
 
 ## Synonym routing
 
 | User says | Route to |
 |---|---|
 | 連線／驗證／登入 MCP／設定好了嗎 | `{key}-session` |
+| 你能做什麼／憲章／邊界 | 本 skill ＋ `references/merchant-charter.md` |
 | 聯絡人／客戶／查誰 | `{key}-contacts` |
 | 預約 | `{key}-reservations` |
 | 派工 | `{key}-dispatch` |
 | 知識庫／FAQ／價目／店規 | `{key}-knowledge` |
 | 記憶／偏好 | `{key}-memory` |
 | 專案摘要／總覽 | `{key}-ops` |
-| 轉真人 | `{key}-dispatch`（escalate）或 `{key}-ops` |
+| 轉真人 | `{key}-dispatch` |
 | 怎麼裝／Authenticate | `{key}-mcp-connect` |
 
 ## What this skill does not do
 
 - It does not replace domain skills.
 - It does not invent MCP tools beyond the server allowlist.
+- It does not copy other products' feature catalogs.
 """,
     )
 
@@ -623,6 +643,16 @@ description: 使用 {key}-dispatch 提議轉真人（需確認）
 使用 {key}-dispatch：先向我確認轉真人的原因，確認後再呼叫 escalate_to_human，並提醒可能需後台核准。
 """,
     )
+    command(
+        "explain-capabilities.md",
+        f"""---
+name: explain-capabilities
+description: 用商家憲章說明能做／不能做的事
+---
+
+使用 {key}-universal-workflow 與 references/merchant-charter.md，用白話說明你現在能幫我做什麼、不能做什麼（含：先讀後提議、後台核准、品牌隔離）。不要誇大沒有的 MCP 工具。
+""",
+    )
 
     write(
         base / "README.md",
@@ -630,11 +660,16 @@ description: 使用 {key}-dispatch 提議轉真人（需確認）
 
 Points agents at **{mcp}** and uses OAuth Authenticate.
 
+Built on **our** merchant charter (not a generic CRM skill pack):
+multi-brand isolation, OAuth project scope, read-first, proposal writes.
+
+See repo root: [`docs/我們的Skill設計.md`](../../docs/我們的Skill設計.md)
+
 Includes:
 
-- Skills: connect, session, policy, contacts, reservations, dispatch, knowledge, memory, ops
-- References: write lifecycle, brand isolation, product terms, error recovery
-- Commands: validate, contacts, summary, reservations, dispatch, knowledge, escalate
+- Skills: connect, session, charter/policy, contacts, reservations, dispatch, knowledge, memory, ops
+- References: merchant-charter, write-lifecycle, brand-isolation, product-terms, error-recovery
+- Commands: validate, contacts, summary, reservations, dispatch, knowledge, escalate, explain-capabilities
 - Host manifests: Cursor, Claude, Codex, Agents
 
 No product source code. Data stays on `{domain}`.
@@ -643,7 +678,7 @@ No product source code. Data stays on `{domain}`.
 
 1. Install this plugin
 2. Authenticate the `{key}` MCP server
-3. Run **validate-{key}-setup**
+3. Run **validate-{key}-setup** or **explain-capabilities**
 4. Revoke later in {disp} dashboard → MCP / connected apps
 """,
     )
@@ -750,6 +785,12 @@ You can also re-Authenticate after Logout on the agent side if the token is stal
 
 ## {VERSION}
 
+- Publish our own skill design: `docs/我們的Skill設計.md` (merchant charter).
+- Add `references/merchant-charter.md` and command `explain-capabilities`.
+- Reframe policy skill as merchant charter (read-first, proposal writes, multi-brand).
+
+## 1.2.0
+
 - Split domain skills: reservations, dispatch, knowledge, memory (ops becomes overview + router).
 - Add `references/`: write-lifecycle, brand-isolation, product-terms, error-recovery.
 - Add commands: list-reservations, list-dispatch, search-knowledge, escalate-human.
@@ -778,6 +819,18 @@ You can also re-Authenticate after Logout on the agent side if the token is stal
 
 版本 **{VERSION}**。
 
+## 我們自己的設計（請先讀）
+
+→ **[docs/我們的Skill設計.md](./docs/我們的Skill設計.md)**
+
+重點不是追別人的功能清單，而是：
+
+- 多品牌隔離  
+- OAuth 綁專案  
+- 先讀後提議  
+- 後台核准才生效  
+- Skill 只描述已上線的 MCP 工具  
+
 ## 與產品的關係
 
 | 本 repo（可公開） | 產品站（保持私有） |
@@ -790,20 +843,13 @@ You can also re-Authenticate after Logout on the agent side if the token is stal
 
 ```text
 community-mcp-marketplace/
+├── docs/我們的Skill設計.md          ← 憲章（我們自己的）
 ├── .cursor-plugin/marketplace.json
 ├── .claude-plugin/marketplace.json
 ├── plugins/
-│   ├── real-mcp/
-│   │   ├── skills/       connect · session · policy · contacts ·
-│   │   │                 reservations · dispatch · knowledge · memory · ops
-│   │   ├── references/   write-lifecycle · brand-isolation ·
-│   │   │                 product-terms · error-recovery
-│   │   ├── commands/     validate · contacts · summary · reservations ·
-│   │   │                 dispatch · knowledge · escalate
-│   │   └── host manifests (Cursor / Claude / Codex / Agents)
-│   ├── s1mple-mcp/
-│   └── infinity-labs-mcp/
-├── LICENSE · SECURITY.md · CHANGELOG.md · PUBLISH.md · README.md
+│   ├── real-mcp/ · s1mple-mcp/ · infinity-labs-mcp/
+│   │     skills/ · references/ · commands/ · host manifests
+├── LICENSE · SECURITY.md · CHANGELOG.md · PUBLISH.md
 └── regen_plugins.py
 ```
 
@@ -811,9 +857,9 @@ community-mcp-marketplace/
 
 1. **安裝**對應站 plugin  
 2. **Authenticate**（瀏覽器登入 → 選專案 → 允許）  
-3. **驗證** `validate-<brand>-setup`  
-4. **日常** 聯絡人／預約／派工／知識庫 commands 或口語  
-5. **撤銷** 後台 MCP／已授權應用（卸載 plugin ≠ 撤銷 grant）— 見 [SECURITY.md](./SECURITY.md)
+3. **驗證** `validate-<brand>-setup` 或 `explain-capabilities`  
+4. **日常** 聯絡人／預約／派工／知識庫  
+5. **撤銷** 後台 MCP／已授權應用 — 見 [SECURITY.md](./SECURITY.md)
 
 ## Skills ↔ 真實 MCP 工具
 

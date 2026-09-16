@@ -4,7 +4,19 @@
 
 **不含**後台原始碼、資料庫、金鑰、商家資料。真正能力在各站伺服器（REAL／s1mple／INFINITY LABS）。
 
-版本 **1.2.0**。
+版本 **1.3.0**。
+
+## 我們自己的設計（請先讀）
+
+→ **[docs/我們的Skill設計.md](./docs/我們的Skill設計.md)**
+
+重點不是追別人的功能清單，而是：
+
+- 多品牌隔離  
+- OAuth 綁專案  
+- 先讀後提議  
+- 後台核准才生效  
+- Skill 只描述已上線的 MCP 工具  
 
 ## 與產品的關係
 
@@ -18,20 +30,13 @@
 
 ```text
 community-mcp-marketplace/
+├── docs/我們的Skill設計.md          ← 憲章（我們自己的）
 ├── .cursor-plugin/marketplace.json
 ├── .claude-plugin/marketplace.json
 ├── plugins/
-│   ├── real-mcp/
-│   │   ├── skills/       connect · session · policy · contacts ·
-│   │   │                 reservations · dispatch · knowledge · memory · ops
-│   │   ├── references/   write-lifecycle · brand-isolation ·
-│   │   │                 product-terms · error-recovery
-│   │   ├── commands/     validate · contacts · summary · reservations ·
-│   │   │                 dispatch · knowledge · escalate
-│   │   └── host manifests (Cursor / Claude / Codex / Agents)
-│   ├── s1mple-mcp/
-│   └── infinity-labs-mcp/
-├── LICENSE · SECURITY.md · CHANGELOG.md · PUBLISH.md · README.md
+│   ├── real-mcp/ · s1mple-mcp/ · infinity-labs-mcp/
+│   │     skills/ · references/ · commands/ · host manifests
+├── LICENSE · SECURITY.md · CHANGELOG.md · PUBLISH.md
 └── regen_plugins.py
 ```
 
@@ -39,9 +44,9 @@ community-mcp-marketplace/
 
 1. **安裝**對應站 plugin  
 2. **Authenticate**（瀏覽器登入 → 選專案 → 允許）  
-3. **驗證** `validate-<brand>-setup`  
-4. **日常** 聯絡人／預約／派工／知識庫 commands 或口語  
-5. **撤銷** 後台 MCP／已授權應用（卸載 plugin ≠ 撤銷 grant）— 見 [SECURITY.md](./SECURITY.md)
+3. **驗證** `validate-<brand>-setup` 或 `explain-capabilities`  
+4. **日常** 聯絡人／預約／派工／知識庫  
+5. **撤銷** 後台 MCP／已授權應用 — 見 [SECURITY.md](./SECURITY.md)
 
 ## Skills ↔ 真實 MCP 工具
 
