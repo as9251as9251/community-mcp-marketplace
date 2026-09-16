@@ -3,13 +3,13 @@
 > 這份文件是 **Community MCP** 的產品憲章，不是跟誰對齊的抄本。  
 > 公開 repo 只放「怎麼連、怎麼問、怎麼提議」；「怎麼實作、怎麼計費、客人資料」永遠留在各站私有後端。
 
-## 1. 該不該向外界學習？
+## 1. 外界機制怎麼取捨？
 
-**該學的是機制，不該學的是別人的業務目錄。**
+**可以吸收的是通用機制；不要照搬別人的業務目錄。**
 
-| 值得學 | 不該照抄 |
+| 值得吸收 | 不該照搬 |
 |---|---|
-| 薄外殼：市集只放 MCP URL＋Skill＋Command | 對方的群發／旅程／對話調查 skill 名稱與流程 |
+| 薄外殼：市集只放 MCP URL＋Skill＋Command | 別人的群發／旅程／對話調查 skill 名稱與流程 |
 | 先驗證 session，再做業務 | 把沒有實作的工具寫進 Skill，讓 Agent 瞎猜 |
 | 政策 skill／references 分離 | 單一品牌假設（我們天生是多站） |
 | 寫入前要使用者確認 | 暗示「一呼叫就已生效」 |
@@ -79,7 +79,7 @@ Skill／Command 只能對應後端 **已上線** 的 MCP 工具。
 | `brand-isolation.md` | 網域／server 硬邊界 |
 | `error-recovery.md` | 401／429／缺工具／5xx |
 
-從公開競品 skill **學機制、不抄目錄**：inbox≠search、時區政策、調查誠實覆蓋、群發 golden cases。不抄 ChatGroup／對方工具名／富訊息直送。
+公開 skill 殼應寫清：inbox≠search、時區政策、調查誠實覆蓋、群發狀態判讀。不做 ChatGroup、不發明未上線工具、富訊息不經 MCP 直送。
 
 ## 4. Command 怎麼設計
 
@@ -127,7 +127,7 @@ Host 差異只在「怎麼點 Authenticate」；業務憲章相同。見各站 `
 - 不在公開 repo 放後端、DB schema、金鑰、商家資料  
 - 不為了「看起來齊全」預寫沒有工具的 skill  
 - 不把三站外殼合併成單一 MCP（會破壞隔離）  
-- 不以競品功能清單當 roadmap；以商家實際 MCP 工具為 roadmap  
+- 不以外部功能清單當 roadmap；以商家實際 MCP 工具為 roadmap  
 
 ## 8. 演進規則
 
