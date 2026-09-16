@@ -13,10 +13,11 @@ description: List REAL dispatch jobs, propose new jobs, or escalate to a human (
 
 ## Write / proposal (confirm first)
 
-- `dispatch_create` — optional `title`, `region`, `notes`, `customer_name`, `customer_phone`
-- `escalate_to_human` — optional `reason` (pauses bot after approval)
+- `dispatch_create` — optional `contact_id`, `title`, `region`, `notes`, `customer_name`, `customer_phone`
+- `escalate_to_human` — required `contact_id`; optional `reason` (pauses bot after approval)
 
 ## Workflow
 
 1. Prefer `dispatch_list` for status questions.
-2. Confirm before create/escalate; remind approval may be required.
+2. Resolve `contact_id` via `real-contacts` / `real-inbox` before escalate (or when binding a job to a guest).
+3. Confirm before create/escalate; remind approval may be required.

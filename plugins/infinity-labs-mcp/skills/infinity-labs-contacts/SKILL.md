@@ -20,6 +20,9 @@ description: List/search INFINITY LABS contacts and tags via MCP (contacts_list,
 2. Use `tags_list` before tagging or broadcast-by-tag.
 3. Detail with `contact_get`.
 
-## Writes
+## Writes (proposal)
 
-Tagging / notes → `infinity-labs-ops` + write-lifecycle (proposals).
+- `contact_add_tag` — required `contact_id`, `tag`
+- `contact_append_note` — required `contact_id`, `note`
+
+Confirm with write-lifecycle first; remind dashboard approval may be required.

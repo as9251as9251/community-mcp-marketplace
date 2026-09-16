@@ -7,7 +7,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 PLUGINS = ROOT / "plugins"
-VERSION = "1.8.1"
+VERSION = "1.8.2"
 
 BRANDS = [
     {
@@ -572,9 +572,12 @@ description: List/search {disp} contacts and tags via MCP (contacts_list, contac
 2. Use `tags_list` before tagging or broadcast-by-tag.
 3. Detail with `contact_get`.
 
-## Writes
+## Writes (proposal)
 
-Tagging / notes → `{key}-ops` + write-lifecycle (proposals).
+- `contact_add_tag` — required `contact_id`, `tag`
+- `contact_append_note` — required `contact_id`, `note`
+
+Confirm with write-lifecycle first; remind dashboard approval may be required.
 """,
     )
 
@@ -796,13 +799,14 @@ description: List {disp} dispatch jobs, propose new jobs, or escalate to a human
 
 ## Write / proposal (confirm first)
 
-- `dispatch_create` — optional `title`, `region`, `notes`, `customer_name`, `customer_phone`
-- `escalate_to_human` — optional `reason` (pauses bot after approval)
+- `dispatch_create` — optional `contact_id`, `title`, `region`, `notes`, `customer_name`, `customer_phone`
+- `escalate_to_human` — required `contact_id`; optional `reason` (pauses bot after approval)
 
 ## Workflow
 
 1. Prefer `dispatch_list` for status questions.
-2. Confirm before create/escalate; remind approval may be required.
+2. Resolve `contact_id` via `{key}-contacts` / `{key}-inbox` before escalate (or when binding a job to a guest).
+3. Confirm before create/escalate; remind approval may be required.
 """,
     )
 
@@ -1203,6 +1207,11 @@ You can also re-Authenticate after Logout on the agent side if the token is stal
         f"""# Changelog
 
 ## {VERSION}
+
+- Schema: `contact_add_tag` / `contact_append_note` / `escalate_to_human` require `contact_id`; `dispatch_create` accepts optional `contact_id`.
+- Skills: contacts／dispatch document contact-scoped writes.
+
+## 1.8.1
 
 - Fix: memory tools require `contact_id` in schema/skills; MCP allowlist UI shows full builtin catalog + reset-to-all-open.
 - Fix: `message_send` strips `preview_token` from stored proposals; soft-deleted contacts rejected at preview/propose.

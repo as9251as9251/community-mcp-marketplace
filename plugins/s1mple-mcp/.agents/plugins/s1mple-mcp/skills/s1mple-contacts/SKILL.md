@@ -20,6 +20,9 @@ description: List/search s1mple contacts and tags via MCP (contacts_list, contac
 2. Use `tags_list` before tagging or broadcast-by-tag.
 3. Detail with `contact_get`.
 
-## Writes
+## Writes (proposal)
 
-Tagging / notes → `s1mple-ops` + write-lifecycle (proposals).
+- `contact_add_tag` — required `contact_id`, `tag`
+- `contact_append_note` — required `contact_id`, `note`
+
+Confirm with write-lifecycle first; remind dashboard approval may be required.

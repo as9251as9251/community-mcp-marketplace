@@ -1,6 +1,6 @@
 {
   "name": "real-mcp",
-  "version": "1.8.1",
+  "version": "1.8.2",
   "interface": {
     "displayName": "REAL MCP",
     "logo": "../../assets/logo.svg",
@@ -13,7 +13,7 @@
   "plugins": [
     {
       "name": "real-mcp",
-      "version": "1.8.1",
+      "version": "1.8.2",
       "source": {
         "source": "local",
         "path": "./real-mcp"

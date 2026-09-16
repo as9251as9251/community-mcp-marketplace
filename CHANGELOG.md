@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.8.2
+
+- Schema: `contact_add_tag` / `contact_append_note` / `escalate_to_human` require `contact_id`; `dispatch_create` accepts optional `contact_id`.
+- Skills: contacts／dispatch document contact-scoped writes.
+
 ## 1.8.1
 
 - Fix: memory tools require `contact_id` in schema/skills; MCP allowlist UI shows full builtin catalog + reset-to-all-open.
