@@ -7,7 +7,7 @@
 
 ## 1.8.0
 
-- Skill shell learning pass: `timezone-policy`, `investigate-playbook`, `broadcast-status-cases`.
+- Skill references: `timezone-policy`, `investigate-playbook`, `broadcast-status-cases`.
 - Thicker inbox／investigate／broadcast／flows boundaries; product-terms dashboard↔MCP map.
 - Commands: `investigate-week`; harden draft-broadcast／search-messages wording.
 - No new MCP tools this release (policy/reference hardening only).
