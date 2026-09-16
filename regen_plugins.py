@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""One-shot generator: multi-host manifests + skills/commands for each brand plugin."""
+"""Regenerate multi-host manifests + skills/commands for each brand plugin."""
 from __future__ import annotations
 
 import json
@@ -7,6 +7,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 PLUGINS = ROOT / "plugins"
+VERSION = "1.2.0"
 
 BRANDS = [
     {
@@ -49,6 +50,87 @@ def write_json(path: Path, data: object) -> None:
     write(path, json.dumps(data, ensure_ascii=False, indent=2) + "\n")
 
 
+def references_bodies(key: str, disp: str, domain: str) -> dict[str, str]:
+    return {
+        "write-lifecycle.md": f"""# Write lifecycle ({disp})
+
+## Before any write / proposal tool
+
+1. Restate the intended business outcome in one short sentence (who / what / when).
+2. Wait for an explicit user confirmation (yes / 確認 / 可以).
+3. Only then call the tool.
+
+Applies to: `memory_upsert`, `contact_add_tag`, `contact_append_note`,
+`reservation_update_status`, `reservation_reschedule`, `dispatch_create`,
+`escalate_to_human`.
+
+## After the tool returns
+
+- Many writes are **proposals** that still need human approval in the {disp} dashboard.
+- Say clearly: may need dashboard approval — do **not** claim the change is live
+  unless the tool result says so.
+- If the user cancels, do not call the tool.
+
+## Invalidation
+
+If the user changes the intended outcome after confirming, confirm again before calling.
+""",
+        "brand-isolation.md": f"""# Brand isolation ({disp})
+
+- MCP server id: `{key}`
+- Domain: `{domain}` only
+- Never call other merchant MCP servers or domains from this plugin's skills.
+- Never reuse tokens, grants, or project ids across brands.
+- If the user asks about another brand, tell them to install/authenticate that brand's plugin.
+""",
+        "product-terms.md": f"""# Product terms (zh-TW) — {disp}
+
+Prefer these customer-facing words:
+
+| Prefer | Avoid leading with |
+|---|---|
+| 專案 | workspace_id（除非使用者要 ID） |
+| 聯絡人／客人 | contact row / schema |
+| 預約 | reservation entity |
+| 派工／派工單 | dispatch job payload |
+| 知識庫／FAQ／價目／店規 | knowledge_search raw hits only |
+| 記憶（內部） | memory_upsert internals |
+| 轉真人 | escalate payload |
+| 需後台核准 | “已寫入完成” without evidence |
+
+If the user asks for IDs or API fields, you may disclose non-sensitive mappings.
+""",
+        "error-recovery.md": f"""# Error recovery ({disp} / `{key}`)
+
+## Auth (`401` / `403` / authentication-required)
+
+Do **not** ask for tokens or paste keys. Guide re-Authenticate:
+
+| Agent | Action |
+|---|---|
+| Cursor | Plugin → MCPs → `{key}` → Logout（若有）→ Authenticate |
+| Claude Code | Uninstall plugin → reinstall |
+| Codex | Uninstall → reinstall from marketplace |
+| Other | MCP settings for `{key}` → Authenticate |
+
+Then retry with `{key}-session` (`workspace_summary`).
+
+## Network / `5xx` / timeout
+
+Treat as connectivity — do **not** start OAuth recovery first. Retry once; if still failing, say the server may be down.
+
+## Tool missing from `tools/list`
+
+The project allowlist disabled that tool. Tell the user it is turned off for this project in the {disp} MCP settings. Do **not** invent a substitute tool name.
+
+## Rate limit / `429`
+
+Do not hammer retries. Tell the user to wait briefly and try again.
+Customer-facing line: `這次操作無法完成，請稍後再試。`
+""",
+    }
+
+
 def gen_brand(b: dict) -> None:
     base = PLUGINS / b["dir"]
     name = b["dir"]
@@ -63,7 +145,7 @@ def gen_brand(b: dict) -> None:
         {
             "name": name,
             "displayName": f"{disp} MCP",
-            "version": "1.1.0",
+            "version": VERSION,
             "description": (
                 f"Workflow skills and hosted MCP for {disp}. "
                 "Install, Authenticate via OAuth, then validate with the session skill. "
@@ -86,7 +168,7 @@ def gen_brand(b: dict) -> None:
         {
             "name": name,
             "displayName": f"{disp} MCP",
-            "version": "1.1.0",
+            "version": VERSION,
             "description": (
                 f"Workflow skills and hosted MCP for {disp}. "
                 "Install, then connect the bundled MCP through OAuth."
@@ -105,7 +187,7 @@ def gen_brand(b: dict) -> None:
         base / ".codex-plugin" / "plugin.json",
         {
             "name": name,
-            "version": "1.1.0",
+            "version": VERSION,
             "description": f"Workflow skills and hosted MCP for {disp}.",
             "author": {"name": "Community MCP", "url": home},
             "homepage": home,
@@ -117,8 +199,8 @@ def gen_brand(b: dict) -> None:
                 "displayName": f"{disp} MCP",
                 "shortDescription": f"Skills and hosted MCP for {disp}.",
                 "longDescription": (
-                    f"Session validation, contacts, reservations, dispatch, and knowledge "
-                    f"tools via OAuth. Product data stays on {domain}."
+                    f"Session validation, contacts, reservations, dispatch, knowledge, "
+                    f"and approved write proposals via OAuth. Data stays on {domain}."
                 ),
                 "developerName": "Community MCP",
                 "category": "Productivity",
@@ -129,7 +211,8 @@ def gen_brand(b: dict) -> None:
                 "defaultPrompt": [
                     f"使用 {key}-session 驗證我的 MCP 設定。確認可用後，簡短說明一下你能幫我做什麼。",
                     f"使用 {key}-contacts 列出最近聯絡人。",
-                    f"使用 {key}-ops 給我一份專案摘要（聯絡人／預約／派工數量）。",
+                    f"使用 {key}-reservations 列出近期預約。",
+                    f"使用 {key}-knowledge 搜尋知識庫 FAQ。",
                 ],
             },
         },
@@ -150,7 +233,7 @@ def gen_brand(b: dict) -> None:
         agents / "marketplace.json",
         {
             "name": name,
-            "version": "1.1.0",
+            "version": VERSION,
             "interface": {
                 "displayName": f"{disp} MCP",
                 "logo": "../../assets/logo.svg",
@@ -163,7 +246,7 @@ def gen_brand(b: dict) -> None:
             "plugins": [
                 {
                     "name": name,
-                    "version": "1.1.0",
+                    "version": VERSION,
                     "source": {"source": "local", "path": f"./{name}"},
                     "policy": {
                         "installation": "AVAILABLE",
@@ -180,17 +263,24 @@ def gen_brand(b: dict) -> None:
         {"mcpServers": {key: {"url": mcp}}},
     )
 
-    # Skills/commands written below also mirrored into .agents/plugins/<name>/ for Antigravity-style hosts.
-    skill_mirror_root = agents / name / "skills"
-    command_mirror_root = agents / name / "commands"
+    skill_mirror = agents / name / "skills"
+    command_mirror = agents / name / "commands"
+    ref_mirror = agents / name / "references"
 
     def skill(rel: str, body: str) -> None:
         write(base / "skills" / rel, body)
-        write(skill_mirror_root / rel, body)
+        write(skill_mirror / rel, body)
 
     def command(rel: str, body: str) -> None:
         write(base / "commands" / rel, body)
-        write(command_mirror_root / rel, body)
+        write(command_mirror / rel, body)
+
+    def reference(rel: str, body: str) -> None:
+        write(base / "references" / rel, body)
+        write(ref_mirror / rel, body)
+
+    for rel, body in references_bodies(key, disp, domain).items():
+        reference(rel, body)
 
     skill(
         f"{key}-mcp-connect/SKILL.md",
@@ -218,6 +308,8 @@ Product code and customer data stay on {disp} servers — this plugin only point
 - Do not invent tokens or paste long-lived keys unless the user explicitly uses the dashboard advanced key flow.
 - Do not call other brands' domains from this skill.
 - Do not ask the user to paste OAuth codes into chat.
+
+Also read `references/brand-isolation.md`.
 """,
     )
 
@@ -225,12 +317,13 @@ Product code and customer data stay on {disp} servers — this plugin only point
         f"{key}-session/SKILL.md",
         f"""---
 name: {key}-session
-description: Validate {disp} MCP session by listing tools and calling workspace_summary. Use when verifying authentication, after OAuth, or when other {disp} skills fail with 401/403.
+description: Validate {disp} MCP session by listing tools and calling workspace_summary. Use when verifying authentication, after OAuth, or when other {disp} skills fail with 401/403/429.
 ---
 
 # Skill: {key}-session
 
 **Prerequisite:** Read `skills/{key}-universal-workflow/SKILL.md` before operational work.
+**Errors:** Read `references/error-recovery.md`.
 
 This skill uses the `{key}` MCP server. Authentication is managed by the agent through MCP OAuth.
 
@@ -243,21 +336,9 @@ This skill uses the `{key}` MCP server. Authentication is managed by the agent t
 
 1. Confirm the `{key}` MCP server is connected.
 2. Call `workspace_summary`.
-3. If it succeeds, briefly tell the user which project is bound and what you can help with (contacts, reservations, dispatch, knowledge, proposed writes that need human approval).
-4. If authentication is missing/expired, follow OAuth recovery below — then retry `workspace_summary`.
-
-## OAuth recovery
-
-If calls fail with `401` / `403` / authentication-required for `{key}`, **do not** ask for tokens, paste keys, or hand-edit MCP URLs.
-
-| Agent | Recovery |
-|---|---|
-| Cursor | Plugin details → **MCPs** → `{key}` → **Logout** (if present) → **Authenticate** |
-| Claude Code | Uninstall this plugin, reinstall; OAuth should start on install |
-| Codex / ChatGPT desktop | Uninstall this plugin, reinstall from the marketplace |
-| Other hosts | Open MCP settings for `{key}` and select **Authenticate** |
-
-Do **not** treat network errors, timeouts, or `5xx` as OAuth failures — check connectivity first.
+3. If it succeeds, briefly tell the user which project is bound and what you can help with
+   (contacts, reservations, dispatch, knowledge, memory, proposed writes needing approval).
+4. On auth failure, follow `references/error-recovery.md`, then retry `workspace_summary`.
 
 ## Guardrails
 
@@ -272,20 +353,26 @@ Do **not** treat network errors, timeouts, or `5xx` as OAuth failures — check 
         f"{key}-universal-workflow/SKILL.md",
         f"""---
 name: {key}-universal-workflow
-description: Shared {disp} policy for customer language, write confirmation, brand isolation, and OAuth. Non-operational prerequisite for every {disp} workflow skill.
+description: Shared {disp} policy for customer language, write confirmation, brand isolation, and errors. Non-operational prerequisite for every {disp} workflow skill.
 ---
 
 # Skill: {key}-universal-workflow
 
 This is a **policy** skill, not an operational workflow. Read it before other `{key}-*` skills use tools.
 
+## Mandatory references (read as needed)
+
+- `references/product-terms.md` — customer-facing wording
+- `references/write-lifecycle.md` — confirm before writes; proposal ≠ live
+- `references/brand-isolation.md` — `{key}` / `{domain}` only
+- `references/error-recovery.md` — auth / 429 / missing tools
+
 ## Mandatory core
 
-1. **Customer language first** — Explain outcomes in plain product terms (聯絡人、預約、派工、知識庫、記憶). Lead with business meaning, not internal IDs, unless the user asks for IDs.
-2. **Confirm before writes** — Tools that *propose* changes (`contact_add_tag`, `contact_append_note`, `reservation_update_status`, `reservation_reschedule`, `dispatch_create`, `escalate_to_human`, `memory_upsert`) need an explicit user confirmation of the intended outcome **before** the tool call. Summarize who/what/when in one short sentence.
-3. **Writes are proposals** — Many write tools create actions that still need human approval in the {disp} dashboard. After calling, say they may need dashboard approval — do not claim the change already went live unless the tool result says so.
-4. **Brand isolation** — Only use MCP server `{key}` and domain `{domain}`. Never call other merchant brands interchangeably from this skill set.
-5. **Allowlist** — If a tool is missing from `tools/list`, it is disabled for this project. Do not invent tool names.
+1. **Customer language first** — use product terms from the reference.
+2. **Confirm before writes** — follow write-lifecycle for every proposal tool.
+3. **Allowlist** — if a tool is missing from `tools/list`, it is disabled; do not invent names.
+4. **Brand isolation** — only MCP `{key}` on `{domain}`.
 
 ## Synonym routing
 
@@ -293,7 +380,12 @@ This is a **policy** skill, not an operational workflow. Read it before other `{
 |---|---|
 | 連線／驗證／登入 MCP／設定好了嗎 | `{key}-session` |
 | 聯絡人／客戶／查誰 | `{key}-contacts` |
-| 預約／派工／摘要／知識庫／FAQ／記憶 | `{key}-ops` |
+| 預約 | `{key}-reservations` |
+| 派工 | `{key}-dispatch` |
+| 知識庫／FAQ／價目／店規 | `{key}-knowledge` |
+| 記憶／偏好 | `{key}-memory` |
+| 專案摘要／總覽 | `{key}-ops` |
+| 轉真人 | `{key}-dispatch`（escalate）或 `{key}-ops` |
 | 怎麼裝／Authenticate | `{key}-mcp-connect` |
 
 ## What this skill does not do
@@ -312,23 +404,122 @@ description: List and look up {disp} contacts via MCP (contacts_list, contact_ge
 
 # Skill: {key}-contacts
 
-**Prerequisite:** Read `skills/{key}-universal-workflow/SKILL.md`. If auth fails, use `{key}-session` recovery first.
+**Prerequisite:** `{key}-universal-workflow`. Auth issues → `{key}-session` + `references/error-recovery.md`.
 
 ## MCP tools
 
-- `contacts_list` — recent contacts (read-only, max 50). Params: `limit` (1–50, default 20), optional `q` name keyword.
+- `contacts_list` — recent contacts (read-only, max 50). Params: `limit` (1–50, default 20), optional `q`.
 - `contact_get` — one contact by `contact_id` (required, integer).
 
 ## Workflow
 
-1. For browse/search: `contacts_list` with a sensible `limit`; pass `q` when the user gives a name fragment.
-2. For detail: `contact_get` with the id from a prior list (or the id the user provides).
-3. Present names and useful fields in plain language; include ids only when helpful for follow-up.
+1. Browse/search with `contacts_list`; pass `q` for name fragments.
+2. Detail with `contact_get` using an id from the list or the user.
+3. Use plain product language (`references/product-terms.md`).
 
-## Guardrails
+## Writes
 
-- Read-only in this skill. Tagging / notes belong in `{key}-ops` with confirmation.
-- Do not fetch other brands' contacts.
+Tagging / notes are **not** in this skill — use `{key}-ops` and `references/write-lifecycle.md`.
+""",
+    )
+
+    skill(
+        f"{key}-reservations/SKILL.md",
+        f"""---
+name: {key}-reservations
+description: List and propose updates to {disp} reservations (reservations_list, reservation_update_status, reservation_reschedule).
+---
+
+# Skill: {key}-reservations
+
+**Prerequisite:** `{key}-universal-workflow` + `references/write-lifecycle.md` for any write.
+
+## Read
+
+- `reservations_list` — `status` optional, `limit` 1–50 (default 20)
+
+## Write / proposal (confirm first)
+
+- `reservation_update_status` — `reservation_id`, `status` (`pending|confirmed|cancelled|completed|no_show`)
+- `reservation_reschedule` — `reservation_id`, `starts_at` (ISO), optional `ends_at`
+
+## Workflow
+
+1. List/filter to answer questions.
+2. For status/time changes: confirm outcome → call proposal tool → remind dashboard approval may be required.
+""",
+    )
+
+    skill(
+        f"{key}-dispatch/SKILL.md",
+        f"""---
+name: {key}-dispatch
+description: List {disp} dispatch jobs, propose new jobs, or escalate to a human (dispatch_list, dispatch_create, escalate_to_human).
+---
+
+# Skill: {key}-dispatch
+
+**Prerequisite:** `{key}-universal-workflow` + `references/write-lifecycle.md` for any write.
+
+## Read
+
+- `dispatch_list` — `status` optional, `limit` 1–50
+
+## Write / proposal (confirm first)
+
+- `dispatch_create` — optional `title`, `region`, `notes`, `customer_name`, `customer_phone`
+- `escalate_to_human` — optional `reason` (pauses bot after approval)
+
+## Workflow
+
+1. Prefer `dispatch_list` for status questions.
+2. Confirm before create/escalate; remind approval may be required.
+""",
+    )
+
+    skill(
+        f"{key}-knowledge/SKILL.md",
+        f"""---
+name: {key}-knowledge
+description: Search {disp} shop knowledge base FAQ / price / policy via knowledge_search.
+---
+
+# Skill: {key}-knowledge
+
+**Prerequisite:** `{key}-universal-workflow`.
+
+## MCP tools
+
+- `knowledge_search` — `q` keyword, `limit` 1–10 (default 5). Read-only.
+
+## Workflow
+
+1. Call with the user's question as `q`.
+2. Summarize answers in plain language; cite snippets when helpful.
+3. If nothing useful returns, say the knowledge base may not cover it — do not invent shop facts.
+""",
+    )
+
+    skill(
+        f"{key}-memory/SKILL.md",
+        f"""---
+name: {key}-memory
+description: List or upsert internal guest memory on {disp} (memory_list, memory_upsert). Memory is internal — not sent to the guest directly.
+---
+
+# Skill: {key}-memory
+
+**Prerequisite:** `{key}-universal-workflow` + `references/write-lifecycle.md` before upsert.
+
+## MCP tools
+
+- `memory_list` — optional `q`, `limit` 1–20 (default 8). Read-only.
+- `memory_upsert` — required `body`; optional `kind` (`preference|fact|history|note`), optional `key` (same key overwrites).
+
+## Workflow
+
+1. List/search first when the user asks what is remembered.
+2. Confirm before upsert; clarify this is **internal** staff memory.
 """,
     )
 
@@ -336,41 +527,29 @@ description: List and look up {disp} contacts via MCP (contacts_list, contact_ge
         f"{key}-ops/SKILL.md",
         f"""---
 name: {key}-ops
-description: {disp} project ops via MCP — summary, reservations, dispatch, knowledge search, memory, and human-approved write proposals.
+description: {disp} project overview via workspace_summary, and router to domain skills for contacts/reservations/dispatch/knowledge/memory.
 ---
 
 # Skill: {key}-ops
 
-**Prerequisite:** Read `skills/{key}-universal-workflow/SKILL.md`. If auth fails, use `{key}-session` recovery first.
+**Prerequisite:** `{key}-universal-workflow`.
 
-## Read tools
+## Primary tool
 
-- `workspace_summary` — counts for contacts / reservations / dispatch jobs
-- `reservations_list` — recent reservations (`status` optional, `limit` 1–50)
-- `dispatch_list` — dispatch jobs (`status` optional, `limit` 1–50)
-- `knowledge_search` — shop FAQ / price / policy facts (`q`, `limit` 1–10)
-- `memory_list` — long-term guest memory (`q` optional, `limit` 1–20)
+- `workspace_summary` — contacts / reservations / dispatch counts (read-only)
 
-## Write / proposal tools (confirm first)
+## When to route elsewhere
 
-- `memory_upsert` — upsert internal memory (`body` required; optional `kind`, `key`)
-- `contact_add_tag` — propose tag
-- `contact_append_note` — propose internal note
-- `reservation_update_status` — propose status change
-- `reservation_reschedule` — propose new `starts_at` (ISO)
-- `dispatch_create` — propose a dispatch job
-- `escalate_to_human` — propose handoff to a human agent
+| Need | Skill |
+|---|---|
+| 聯絡人 | `{key}-contacts` |
+| 預約 | `{key}-reservations` |
+| 派工／轉真人 | `{key}-dispatch` |
+| FAQ／價目 | `{key}-knowledge` |
+| 內部記憶 | `{key}-memory` |
 
-## Workflow
-
-1. Prefer reads (`workspace_summary`, lists, `knowledge_search`) to answer questions.
-2. Before any write/proposal tool: confirm the intended business outcome in one sentence; wait for explicit yes.
-3. After a proposal tool: remind that dashboard approval may still be required.
-
-## Guardrails
-
-- Never claim a proposed write is live without confirmation from the tool/dashboard.
-- Stay on `{key}` / `{domain}` only.
+Cross-cutting write proposals may still be done here **only if** the user already confirmed
+and `references/write-lifecycle.md` is followed — otherwise prefer the domain skill.
 """,
     )
 
@@ -384,7 +563,6 @@ description: 使用 {key}-session 驗證 MCP 設定，並簡短說明可用能�
 使用 {key}-session 驗證我的 MCP 設定。確認可用後，簡短說明一下你能幫我做什麼。
 """,
     )
-
     command(
         "list-contacts.md",
         f"""---
@@ -395,7 +573,6 @@ description: 使用 {key}-contacts 列出最近聯絡人
 使用 {key}-contacts 列出最近聯絡人（約 20 筆）。若有關鍵字我再補。
 """,
     )
-
     command(
         "project-summary.md",
         f"""---
@@ -404,6 +581,46 @@ description: 使用 {key}-ops 取得專案摘要
 ---
 
 使用 {key}-ops 呼叫 workspace_summary，給我一份專案摘要（聯絡人／預約／派工數量）。
+""",
+    )
+    command(
+        "list-reservations.md",
+        f"""---
+name: list-reservations
+description: 使用 {key}-reservations 列出近期預約
+---
+
+使用 {key}-reservations 列出近期預約（約 20 筆）。
+""",
+    )
+    command(
+        "list-dispatch.md",
+        f"""---
+name: list-dispatch
+description: 使用 {key}-dispatch 列出派工單
+---
+
+使用 {key}-dispatch 列出近期派工單。
+""",
+    )
+    command(
+        "search-knowledge.md",
+        f"""---
+name: search-knowledge
+description: 使用 {key}-knowledge 搜尋知識庫
+---
+
+使用 {key}-knowledge 搜尋知識庫。若我沒給關鍵字，先問我要查什麼（FAQ／價目／店規）。
+""",
+    )
+    command(
+        "escalate-human.md",
+        f"""---
+name: escalate-human
+description: 使用 {key}-dispatch 提議轉真人（需確認）
+---
+
+使用 {key}-dispatch：先向我確認轉真人的原因，確認後再呼叫 escalate_to_human，並提醒可能需後台核准。
 """,
     )
 
@@ -415,18 +632,19 @@ Points agents at **{mcp}** and uses OAuth Authenticate.
 
 Includes:
 
-- Skills: connect, session validation, shared policy, contacts, ops
-- Commands: validate setup, list contacts, project summary
+- Skills: connect, session, policy, contacts, reservations, dispatch, knowledge, memory, ops
+- References: write lifecycle, brand isolation, product terms, error recovery
+- Commands: validate, contacts, summary, reservations, dispatch, knowledge, escalate
 - Host manifests: Cursor, Claude, Codex, Agents
 
-No product source code is included. Data stays on `{domain}`.
+No product source code. Data stays on `{domain}`.
 
 ## Quick start
 
 1. Install this plugin
 2. Authenticate the `{key}` MCP server
-3. Run command **validate-{key}-setup** (or ask the agent to use `{key}-session`)
-4. To revoke access later: open {disp} dashboard → MCP / connected apps → revoke the grant
+3. Run **validate-{key}-setup**
+4. Revoke later in {disp} dashboard → MCP / connected apps
 """,
     )
 
@@ -440,30 +658,31 @@ def gen_root() -> None:
             "metadata": {
                 "description": (
                     "Thin public shells that connect agents to REAL / s1mple / INFINITY LABS "
-                    "MCP via OAuth Authenticate. Skills + commands included. No product source code."
+                    "MCP via OAuth Authenticate. Domain skills + references included. "
+                    "No product source code."
                 ),
-                "version": "1.1.0",
+                "version": VERSION,
                 "pluginRoot": "plugins",
             },
             "plugins": [
                 {
                     "name": "real-mcp",
                     "source": "real-mcp",
-                    "description": "Connect to REAL (realvip.cc) MCP with Authenticate + workflow skills",
+                    "description": "REAL MCP Authenticate + workflow skills",
                     "category": "mcp",
                     "tags": ["mcp", "oauth", "crm", "skills"],
                 },
                 {
                     "name": "s1mple-mcp",
                     "source": "s1mple-mcp",
-                    "description": "Connect to s1mple (s1mple-pro.com) MCP with Authenticate + workflow skills",
+                    "description": "s1mple MCP Authenticate + workflow skills",
                     "category": "mcp",
                     "tags": ["mcp", "oauth", "crm", "skills"],
                 },
                 {
                     "name": "infinity-labs-mcp",
                     "source": "infinity-labs-mcp",
-                    "description": "Connect to INFINITY LABS MCP with Authenticate + workflow skills",
+                    "description": "INFINITY LABS MCP Authenticate + workflow skills",
                     "category": "mcp",
                     "tags": ["mcp", "oauth", "crm", "skills"],
                 },
@@ -478,19 +697,18 @@ def gen_root() -> None:
             "owner": {"name": "Community MCP", "email": "plugins@example.com"},
             "description": (
                 "Community MCP marketplace shells for REAL / s1mple / INFINITY LABS — "
-                "OAuth Authenticate plus workflow skills."
+                "OAuth Authenticate plus domain workflow skills."
             ),
-            "version": "1.1.0",
+            "version": VERSION,
             "plugins": [
                 {
                     "name": b["dir"],
                     "source": f"./plugins/{b['dir']}",
                     "displayName": f"{b['display']} MCP",
                     "description": (
-                        f"{b['display']} MCP skills. After install, run validate-{b['key']}-setup "
-                        "then query contacts or project summary as needed."
+                        f"{b['display']} MCP skills. After install, run validate-{b['key']}-setup."
                     ),
-                    "version": "1.1.0",
+                    "version": VERSION,
                     "author": {"name": "Community MCP", "url": b["homepage"]},
                     "homepage": b["homepage"],
                     "license": "MIT",
@@ -528,15 +746,21 @@ You can also re-Authenticate after Logout on the agent side if the token is stal
 
     write(
         ROOT / "CHANGELOG.md",
-        """# Changelog
+        f"""# Changelog
+
+## {VERSION}
+
+- Split domain skills: reservations, dispatch, knowledge, memory (ops becomes overview + router).
+- Add `references/`: write-lifecycle, brand-isolation, product-terms, error-recovery.
+- Add commands: list-reservations, list-dispatch, search-knowledge, escalate-human.
+- Harden session skill guidance for 401/403/429 and missing allowlisted tools.
 
 ## 1.1.0
 
-- Add session / universal-workflow / contacts / ops skills per brand (aligned to real MCP tools).
+- Add session / universal-workflow / contacts / ops skills per brand.
 - Add commands: validate-*-setup, list-contacts, project-summary.
-- Add Claude / Codex / Agents host manifests (`.claude-plugin`, `.codex-plugin`, `.agents`).
-- Add `.mcp.json` / `codex.mcp.json` HTTP MCP declarations.
-- Document install → Authenticate → validate → revoke in README and SECURITY.md.
+- Add Claude / Codex / Agents host manifests.
+- Document install → Authenticate → validate → revoke.
 
 ## 1.0.0
 
@@ -546,18 +770,20 @@ You can also re-Authenticate after Logout on the agent side if the token is stal
 
     write(
         ROOT / "README.md",
-        """# Community MCP Marketplace（公開外殼）
+        f"""# Community MCP Marketplace（公開外殼）
 
-給 **Cursor／Claude／Codex／Agents** 用的**公開薄包**：固定 MCP URL、OAuth Authenticate、workflow skills／commands。
+給 **Cursor／Claude／Codex／Agents** 用的**公開薄包**：固定 MCP URL、OAuth Authenticate、domain skills／commands／references。
 
 **不含**後台原始碼、資料庫、金鑰、商家資料。真正能力在各站伺服器（REAL／s1mple／INFINITY LABS）。
+
+版本 **{VERSION}**。
 
 ## 與產品的關係
 
 | 本 repo（可公開） | 產品站（保持私有） |
 |---|---|
 | `mcp.json` → `…/api/mcp/v1/jsonrpc` | FastAPI、DB、儀表板 |
-| Skills 教 Agent 何時呼叫哪個工具 | OAuth／工具實作 |
+| Skills／references 教 Agent 怎麼用工具 | OAuth／工具實作 |
 | Commands 當快捷驗證／查詢 | 核准佇列、計費、稽核 |
 
 ## 本機結構
@@ -568,61 +794,64 @@ community-mcp-marketplace/
 ├── .claude-plugin/marketplace.json
 ├── plugins/
 │   ├── real-mcp/
-│   │   ├── .cursor-plugin/  .claude-plugin/  .codex-plugin/  .agents/
-│   │   ├── skills/          (connect · session · policy · contacts · ops)
-│   │   ├── commands/        (validate · list-contacts · project-summary)
-│   │   ├── mcp.json  .mcp.json  codex.mcp.json
-│   │   └── assets/
+│   │   ├── skills/       connect · session · policy · contacts ·
+│   │   │                 reservations · dispatch · knowledge · memory · ops
+│   │   ├── references/   write-lifecycle · brand-isolation ·
+│   │   │                 product-terms · error-recovery
+│   │   ├── commands/     validate · contacts · summary · reservations ·
+│   │   │                 dispatch · knowledge · escalate
+│   │   └── host manifests (Cursor / Claude / Codex / Agents)
 │   ├── s1mple-mcp/
 │   └── infinity-labs-mcp/
-├── LICENSE
-├── SECURITY.md
-├── CHANGELOG.md
-├── PUBLISH.md
-└── README.md
+├── LICENSE · SECURITY.md · CHANGELOG.md · PUBLISH.md · README.md
+└── regen_plugins.py
 ```
 
 ## 使用者流程（安裝 → 授權 → 驗證 → 撤銷）
 
-1. **安裝**對應站的 plugin（Cursor Team Marketplace／Import from Repo，或其他 host 的 plugin 目錄）。
-2. **Authenticate**：在 MCP 設定對該 server 按授權；瀏覽器登入該站 → 選專案 → 允許。無需手貼 Token。
-3. **驗證**：執行命令 `validate-<brand>-setup`，或請 Agent 使用 `<brand>-session`（會打 `workspace_summary`）。
-4. **日常**：`list-contacts`／`project-summary`，或口語「查聯絡人」「專案摘要」。
-5. **撤銷**：到該站後台 MCP／已授權應用撤銷 grant（卸載 plugin **不會**自動撤銷伺服器端授權）。詳見 [SECURITY.md](./SECURITY.md)。
+1. **安裝**對應站 plugin  
+2. **Authenticate**（瀏覽器登入 → 選專案 → 允許）  
+3. **驗證** `validate-<brand>-setup`  
+4. **日常** 聯絡人／預約／派工／知識庫 commands 或口語  
+5. **撤銷** 後台 MCP／已授權應用（卸載 plugin ≠ 撤銷 grant）— 見 [SECURITY.md](./SECURITY.md)
 
-## Skills 對應的真實工具
+## Skills ↔ 真實 MCP 工具
 
-唯讀：`workspace_summary`、`contacts_list`、`contact_get`、`reservations_list`、`dispatch_list`、`knowledge_search`、`memory_list`  
-寫入（多為儀表板核准提案）：`memory_upsert`、`contact_add_tag`、`contact_append_note`、`reservation_*`、`dispatch_create`、`escalate_to_human`
+| Skill | Tools |
+|---|---|
+| session / ops | `workspace_summary` |
+| contacts | `contacts_list`, `contact_get` |
+| reservations | `reservations_list`, `reservation_*` |
+| dispatch | `dispatch_list`, `dispatch_create`, `escalate_to_human` |
+| knowledge | `knowledge_search` |
+| memory | `memory_list`, `memory_upsert` |
 
-寫入前 Agent 必須先確認意圖（見各站 `*-universal-workflow` skill）。
+寫入前必須確認意圖（`references/write-lifecycle.md`）。
 
-## 下一步
+## 維護
 
-見 [PUBLISH.md](./PUBLISH.md)：建立公開 GitHub repo →（可選）送 Cursor Marketplace 審核。
+三站外殼同步：`python regen_plugins.py`  
+發布步驟：[PUBLISH.md](./PUBLISH.md)
 """,
     )
 
-    # Refresh PUBLISH note about multi-host without rewriting entire file intent
-    publish = (ROOT / "PUBLISH.md").read_text(encoding="utf-8")
-    if "Claude／Codex" not in publish:
+    publish_path = ROOT / "PUBLISH.md"
+    publish = publish_path.read_text(encoding="utf-8")
+    if "regen_plugins.py" not in publish:
         publish = publish.replace(
-            "## D. 本包開了什麼、沒開什麼",
-            """## D. 多 host 清單
-
-各 `plugins/*` 已含 `.cursor-plugin`、`.claude-plugin`、`.codex-plugin`、`.agents`。  
-根目錄另有 `.claude-plugin/marketplace.json`（三站並列）。送審時以目標 host 文件為準；Cursor 仍以根目錄 `.cursor-plugin/marketplace.json` 為主。
+            "## E. 本包開了什麼、沒開什麼",
+            """維護三站 skills／commands 時可跑 `python regen_plugins.py`（會覆寫各 plugin 外殼；勿把產品後端拷進來）。
 
 ## E. 本包開了什麼、沒開什麼""",
         )
-        write(ROOT / "PUBLISH.md", publish)
+        write(publish_path, publish)
 
 
 def main() -> None:
     for b in BRANDS:
         gen_brand(b)
     gen_root()
-    print("OK")
+    print("OK", VERSION)
 
 
 if __name__ == "__main__":

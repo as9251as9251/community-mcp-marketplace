@@ -5,20 +5,19 @@ description: List and look up s1mple contacts via MCP (contacts_list, contact_ge
 
 # Skill: s1mple-contacts
 
-**Prerequisite:** Read `skills/s1mple-universal-workflow/SKILL.md`. If auth fails, use `s1mple-session` recovery first.
+**Prerequisite:** `s1mple-universal-workflow`. Auth issues → `s1mple-session` + `references/error-recovery.md`.
 
 ## MCP tools
 
-- `contacts_list` — recent contacts (read-only, max 50). Params: `limit` (1–50, default 20), optional `q` name keyword.
+- `contacts_list` — recent contacts (read-only, max 50). Params: `limit` (1–50, default 20), optional `q`.
 - `contact_get` — one contact by `contact_id` (required, integer).
 
 ## Workflow
 
-1. For browse/search: `contacts_list` with a sensible `limit`; pass `q` when the user gives a name fragment.
-2. For detail: `contact_get` with the id from a prior list (or the id the user provides).
-3. Present names and useful fields in plain language; include ids only when helpful for follow-up.
+1. Browse/search with `contacts_list`; pass `q` for name fragments.
+2. Detail with `contact_get` using an id from the list or the user.
+3. Use plain product language (`references/product-terms.md`).
 
-## Guardrails
+## Writes
 
-- Read-only in this skill. Tagging / notes belong in `s1mple-ops` with confirmation.
-- Do not fetch other brands' contacts.
+Tagging / notes are **not** in this skill — use `s1mple-ops` and `references/write-lifecycle.md`.

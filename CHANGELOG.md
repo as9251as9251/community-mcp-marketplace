@@ -1,12 +1,18 @@
 # Changelog
 
+## 1.2.0
+
+- Split domain skills: reservations, dispatch, knowledge, memory (ops becomes overview + router).
+- Add `references/`: write-lifecycle, brand-isolation, product-terms, error-recovery.
+- Add commands: list-reservations, list-dispatch, search-knowledge, escalate-human.
+- Harden session skill guidance for 401/403/429 and missing allowlisted tools.
+
 ## 1.1.0
 
-- Add session / universal-workflow / contacts / ops skills per brand (aligned to real MCP tools).
+- Add session / universal-workflow / contacts / ops skills per brand.
 - Add commands: validate-*-setup, list-contacts, project-summary.
-- Add Claude / Codex / Agents host manifests (`.claude-plugin`, `.codex-plugin`, `.agents`).
-- Add `.mcp.json` / `codex.mcp.json` HTTP MCP declarations.
-- Document install → Authenticate → validate → revoke in README and SECURITY.md.
+- Add Claude / Codex / Agents host manifests.
+- Document install → Authenticate → validate → revoke.
 
 ## 1.0.0
 

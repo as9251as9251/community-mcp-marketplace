@@ -22,3 +22,5 @@ Product code and customer data stay on REAL servers — this plugin only points 
 - Do not invent tokens or paste long-lived keys unless the user explicitly uses the dashboard advanced key flow.
 - Do not call other brands' domains from this skill.
 - Do not ask the user to paste OAuth codes into chat.
+
+Also read `references/brand-isolation.md`.

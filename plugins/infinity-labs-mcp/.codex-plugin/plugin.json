@@ -1,6 +1,6 @@
 {
   "name": "infinity-labs-mcp",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Workflow skills and hosted MCP for INFINITY LABS.",
   "author": {
     "name": "Community MCP",
@@ -20,7 +20,7 @@
   "interface": {
     "displayName": "INFINITY LABS MCP",
     "shortDescription": "Skills and hosted MCP for INFINITY LABS.",
-    "longDescription": "Session validation, contacts, reservations, dispatch, and knowledge tools via OAuth. Product data stays on infinity-labs.zeabur.app.",
+    "longDescription": "Session validation, contacts, reservations, dispatch, knowledge, and approved write proposals via OAuth. Data stays on infinity-labs.zeabur.app.",
     "developerName": "Community MCP",
     "category": "Productivity",
     "capabilities": [
@@ -33,7 +33,8 @@
     "defaultPrompt": [
       "使用 infinity-labs-session 驗證我的 MCP 設定。確認可用後，簡短說明一下你能幫我做什麼。",
       "使用 infinity-labs-contacts 列出最近聯絡人。",
-      "使用 infinity-labs-ops 給我一份專案摘要（聯絡人／預約／派工數量）。"
+      "使用 infinity-labs-reservations 列出近期預約。",
+      "使用 infinity-labs-knowledge 搜尋知識庫 FAQ。"
     ]
   }
 }

@@ -1,37 +1,25 @@
 ---
 name: s1mple-ops
-description: s1mple project ops via MCP — summary, reservations, dispatch, knowledge search, memory, and human-approved write proposals.
+description: s1mple project overview via workspace_summary, and router to domain skills for contacts/reservations/dispatch/knowledge/memory.
 ---
 
 # Skill: s1mple-ops
 
-**Prerequisite:** Read `skills/s1mple-universal-workflow/SKILL.md`. If auth fails, use `s1mple-session` recovery first.
+**Prerequisite:** `s1mple-universal-workflow`.
 
-## Read tools
+## Primary tool
 
-- `workspace_summary` — counts for contacts / reservations / dispatch jobs
-- `reservations_list` — recent reservations (`status` optional, `limit` 1–50)
-- `dispatch_list` — dispatch jobs (`status` optional, `limit` 1–50)
-- `knowledge_search` — shop FAQ / price / policy facts (`q`, `limit` 1–10)
-- `memory_list` — long-term guest memory (`q` optional, `limit` 1–20)
+- `workspace_summary` — contacts / reservations / dispatch counts (read-only)
 
-## Write / proposal tools (confirm first)
+## When to route elsewhere
 
-- `memory_upsert` — upsert internal memory (`body` required; optional `kind`, `key`)
-- `contact_add_tag` — propose tag
-- `contact_append_note` — propose internal note
-- `reservation_update_status` — propose status change
-- `reservation_reschedule` — propose new `starts_at` (ISO)
-- `dispatch_create` — propose a dispatch job
-- `escalate_to_human` — propose handoff to a human agent
+| Need | Skill |
+|---|---|
+| 聯絡人 | `s1mple-contacts` |
+| 預約 | `s1mple-reservations` |
+| 派工／轉真人 | `s1mple-dispatch` |
+| FAQ／價目 | `s1mple-knowledge` |
+| 內部記憶 | `s1mple-memory` |
 
-## Workflow
-
-1. Prefer reads (`workspace_summary`, lists, `knowledge_search`) to answer questions.
-2. Before any write/proposal tool: confirm the intended business outcome in one sentence; wait for explicit yes.
-3. After a proposal tool: remind that dashboard approval may still be required.
-
-## Guardrails
-
-- Never claim a proposed write is live without confirmation from the tool/dashboard.
-- Stay on `s1mple` / `s1mple-pro.com` only.
+Cross-cutting write proposals may still be done here **only if** the user already confirmed
+and `references/write-lifecycle.md` is followed — otherwise prefer the domain skill.

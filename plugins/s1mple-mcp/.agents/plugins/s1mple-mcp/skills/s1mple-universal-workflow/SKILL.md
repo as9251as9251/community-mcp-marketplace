@@ -1,19 +1,25 @@
 ---
 name: s1mple-universal-workflow
-description: Shared s1mple policy for customer language, write confirmation, brand isolation, and OAuth. Non-operational prerequisite for every s1mple workflow skill.
+description: Shared s1mple policy for customer language, write confirmation, brand isolation, and errors. Non-operational prerequisite for every s1mple workflow skill.
 ---
 
 # Skill: s1mple-universal-workflow
 
 This is a **policy** skill, not an operational workflow. Read it before other `s1mple-*` skills use tools.
 
+## Mandatory references (read as needed)
+
+- `references/product-terms.md` — customer-facing wording
+- `references/write-lifecycle.md` — confirm before writes; proposal ≠ live
+- `references/brand-isolation.md` — `s1mple` / `s1mple-pro.com` only
+- `references/error-recovery.md` — auth / 429 / missing tools
+
 ## Mandatory core
 
-1. **Customer language first** — Explain outcomes in plain product terms (聯絡人、預約、派工、知識庫、記憶). Lead with business meaning, not internal IDs, unless the user asks for IDs.
-2. **Confirm before writes** — Tools that *propose* changes (`contact_add_tag`, `contact_append_note`, `reservation_update_status`, `reservation_reschedule`, `dispatch_create`, `escalate_to_human`, `memory_upsert`) need an explicit user confirmation of the intended outcome **before** the tool call. Summarize who/what/when in one short sentence.
-3. **Writes are proposals** — Many write tools create actions that still need human approval in the s1mple dashboard. After calling, say they may need dashboard approval — do not claim the change already went live unless the tool result says so.
-4. **Brand isolation** — Only use MCP server `s1mple` and domain `s1mple-pro.com`. Never call other merchant brands interchangeably from this skill set.
-5. **Allowlist** — If a tool is missing from `tools/list`, it is disabled for this project. Do not invent tool names.
+1. **Customer language first** — use product terms from the reference.
+2. **Confirm before writes** — follow write-lifecycle for every proposal tool.
+3. **Allowlist** — if a tool is missing from `tools/list`, it is disabled; do not invent names.
+4. **Brand isolation** — only MCP `s1mple` on `s1mple-pro.com`.
 
 ## Synonym routing
 
@@ -21,7 +27,12 @@ This is a **policy** skill, not an operational workflow. Read it before other `s
 |---|---|
 | 連線／驗證／登入 MCP／設定好了嗎 | `s1mple-session` |
 | 聯絡人／客戶／查誰 | `s1mple-contacts` |
-| 預約／派工／摘要／知識庫／FAQ／記憶 | `s1mple-ops` |
+| 預約 | `s1mple-reservations` |
+| 派工 | `s1mple-dispatch` |
+| 知識庫／FAQ／價目／店規 | `s1mple-knowledge` |
+| 記憶／偏好 | `s1mple-memory` |
+| 專案摘要／總覽 | `s1mple-ops` |
+| 轉真人 | `s1mple-dispatch`（escalate）或 `s1mple-ops` |
 | 怎麼裝／Authenticate | `s1mple-mcp-connect` |
 
 ## What this skill does not do

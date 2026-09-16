@@ -5,15 +5,15 @@
     "email": "plugins@example.com"
   },
   "metadata": {
-    "description": "Thin public shells that connect agents to REAL / s1mple / INFINITY LABS MCP via OAuth Authenticate. Skills + commands included. No product source code.",
-    "version": "1.1.0",
+    "description": "Thin public shells that connect agents to REAL / s1mple / INFINITY LABS MCP via OAuth Authenticate. Domain skills + references included. No product source code.",
+    "version": "1.2.0",
     "pluginRoot": "plugins"
   },
   "plugins": [
     {
       "name": "real-mcp",
       "source": "real-mcp",
-      "description": "Connect to REAL (realvip.cc) MCP with Authenticate + workflow skills",
+      "description": "REAL MCP Authenticate + workflow skills",
       "category": "mcp",
       "tags": [
         "mcp",
@@ -25,7 +25,7 @@
     {
       "name": "s1mple-mcp",
       "source": "s1mple-mcp",
-      "description": "Connect to s1mple (s1mple-pro.com) MCP with Authenticate + workflow skills",
+      "description": "s1mple MCP Authenticate + workflow skills",
       "category": "mcp",
       "tags": [
         "mcp",
@@ -37,7 +37,7 @@
     {
       "name": "infinity-labs-mcp",
       "source": "infinity-labs-mcp",
-      "description": "Connect to INFINITY LABS MCP with Authenticate + workflow skills",
+      "description": "INFINITY LABS MCP Authenticate + workflow skills",
       "category": "mcp",
       "tags": [
         "mcp",
