@@ -16,6 +16,8 @@ description: INFINITY LABS project overview via workspace_summary, and router to
 | Need | Skill |
 |---|---|
 | 聯絡人 | `infinity-labs-contacts` |
+| 收件匣／對話 | `infinity-labs-inbox` |
+| 搜訊息 | `infinity-labs-investigate` |
 | 預約 | `infinity-labs-reservations` |
 | 派工／轉真人 | `infinity-labs-dispatch` |
 | FAQ／價目 | `infinity-labs-knowledge` |

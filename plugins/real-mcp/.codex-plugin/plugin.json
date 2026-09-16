@@ -1,6 +1,6 @@
 {
   "name": "real-mcp",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Workflow skills and hosted MCP for REAL.",
   "author": {
     "name": "Community MCP",
@@ -32,9 +32,9 @@
     "logo": "./assets/logo.svg",
     "defaultPrompt": [
       "使用 real-session 驗證我的 MCP 設定。確認可用後，簡短說明一下你能幫我做什麼。",
-      "使用 real-contacts 列出最近聯絡人。",
-      "使用 real-reservations 列出近期預約。",
-      "使用 real-knowledge 搜尋知識庫 FAQ。"
+      "使用 real-inbox 列出訊息中心最近對話。",
+      "使用 real-investigate 搜尋最近訊息關鍵字。",
+      "使用 real-contacts 列出最近聯絡人。"
     ]
   }
 }

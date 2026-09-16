@@ -7,7 +7,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 PLUGINS = ROOT / "plugins"
-VERSION = "1.3.0"
+VERSION = "1.4.0"
 
 BRANDS = [
     {
@@ -223,9 +223,9 @@ def gen_brand(b: dict) -> None:
                 "logo": "./assets/logo.svg",
                 "defaultPrompt": [
                     f"使用 {key}-session 驗證我的 MCP 設定。確認可用後，簡短說明一下你能幫我做什麼。",
+                    f"使用 {key}-inbox 列出訊息中心最近對話。",
+                    f"使用 {key}-investigate 搜尋最近訊息關鍵字。",
                     f"使用 {key}-contacts 列出最近聯絡人。",
-                    f"使用 {key}-reservations 列出近期預約。",
-                    f"使用 {key}-knowledge 搜尋知識庫 FAQ。",
                 ],
             },
         },
@@ -399,6 +399,8 @@ Canonical design: repo `docs/我們的Skill設計.md` · local summary `referenc
 | 連線／驗證／登入 MCP／設定好了嗎 | `{key}-session` |
 | 你能做什麼／憲章／邊界 | 本 skill ＋ `references/merchant-charter.md` |
 | 聯絡人／客戶／查誰 | `{key}-contacts` |
+| 收件匣／訊息中心／誰找過 | `{key}-inbox` |
+| 搜訊息／查對話內容／關鍵字 | `{key}-investigate` |
 | 預約 | `{key}-reservations` |
 | 派工 | `{key}-dispatch` |
 | 知識庫／FAQ／價目／店規 | `{key}-knowledge` |
@@ -440,6 +442,64 @@ description: List and look up {disp} contacts via MCP (contacts_list, contact_ge
 ## Writes
 
 Tagging / notes are **not** in this skill — use `{key}-ops` and `references/write-lifecycle.md`.
+""",
+    )
+
+    skill(
+        f"{key}-inbox/SKILL.md",
+        f"""---
+name: {key}-inbox
+description: Browse {disp} Unified Inbox threads (inbox_list, conversation_get). Read-only message-center triage.
+---
+
+# Skill: {key}-inbox
+
+**Prerequisite:** `{key}-universal-workflow`. Auth issues → `{key}-session`.
+
+## MCP tools
+
+- `inbox_list` — recent threads. Params: optional `folder` (`open|pending|done`), `platform`, `q`, `limit` 1–50.
+- `conversation_get` — one contact summary + recent messages. Required `contact_id`; optional `limit` 1–50 (default 30).
+
+## Workflow
+
+1. Triage with `inbox_list` (folder/platform/name as needed).
+2. Open a thread with `conversation_get`.
+3. For keyword / period search across the project, hand off to `{key}-investigate` (`messages_search`).
+
+## Guardrails
+
+- Read-only. Sending messages is not in this skill (no MCP send tool yet).
+- Do not treat `inbox_list` as a full historical census of every contact.
+""",
+    )
+
+    skill(
+        f"{key}-investigate/SKILL.md",
+        f"""---
+name: {key}-investigate
+description: Search {disp} inbox message bodies with messages_search (read-only, max 30-day window).
+---
+
+# Skill: {key}-investigate
+
+**Prerequisite:** `{key}-universal-workflow` + `references/error-recovery.md`.
+
+## MCP tools
+
+- `messages_search` — required `q`; optional `contact_id`, `days` (1–30, default 14), `limit` 1–50.
+
+## Workflow
+
+1. Always pass a real keyword in `q`.
+2. If the user names a period, set `days` explicitly (cap 30). Do not claim coverage beyond the window returned in `since` / `days`.
+3. Cite message ids / contact names from the result; do not invent quotes.
+4. For opening a full recent thread after a hit, use `{key}-inbox` → `conversation_get`.
+
+## Guardrails
+
+- Read-only. No send / broadcast / CRM writes here.
+- Hard max **30 days** — split longer asks into multiple windows and say so.
 """,
     )
 
@@ -563,6 +623,8 @@ description: {disp} project overview via workspace_summary, and router to domain
 | Need | Skill |
 |---|---|
 | 聯絡人 | `{key}-contacts` |
+| 收件匣／對話 | `{key}-inbox` |
+| 搜訊息 | `{key}-investigate` |
 | 預約 | `{key}-reservations` |
 | 派工／轉真人 | `{key}-dispatch` |
 | FAQ／價目 | `{key}-knowledge` |
@@ -591,6 +653,26 @@ description: 使用 {key}-contacts 列出最近聯絡人
 ---
 
 使用 {key}-contacts 列出最近聯絡人（約 20 筆）。若有關鍵字我再補。
+""",
+    )
+    command(
+        "list-inbox.md",
+        f"""---
+name: list-inbox
+description: 使用 {key}-inbox 列出訊息中心收件匣
+---
+
+使用 {key}-inbox 的 inbox_list 列出最近對話（約 20 筆）。預設看 open；若要 pending／done 跟我說。
+""",
+    )
+    command(
+        "search-messages.md",
+        f"""---
+name: search-messages
+description: 使用 {key}-investigate 搜尋訊息內文
+---
+
+使用 {key}-investigate（messages_search）搜尋訊息。若我還沒給關鍵字，先問我要搜什麼；時間窗預設 14 天、最多 30 天。
 """,
     )
     command(
@@ -667,9 +749,9 @@ See repo root: [`docs/我們的Skill設計.md`](../../docs/我們的Skill設計.
 
 Includes:
 
-- Skills: connect, session, charter/policy, contacts, reservations, dispatch, knowledge, memory, ops
+- Skills: connect, session, charter/policy, contacts, inbox, investigate, reservations, dispatch, knowledge, memory, ops
 - References: merchant-charter, write-lifecycle, brand-isolation, product-terms, error-recovery
-- Commands: validate, contacts, summary, reservations, dispatch, knowledge, escalate, explain-capabilities
+- Commands: validate, contacts, inbox, search-messages, summary, reservations, dispatch, knowledge, escalate, explain-capabilities
 - Host manifests: Cursor, Claude, Codex, Agents
 
 No product source code. Data stays on `{domain}`.
@@ -785,6 +867,11 @@ You can also re-Authenticate after Logout on the agent side if the token is stal
 
 ## {VERSION}
 
+- MCP P0 tools (product): `inbox_list`, `conversation_get`, `messages_search` on all three brands.
+- Skills: `*-inbox`, `*-investigate`; commands: `list-inbox`, `search-messages`.
+
+## 1.3.0
+
 - Publish our own skill design: `docs/我們的Skill設計.md` (merchant charter).
 - Add `references/merchant-charter.md` and command `explain-capabilities`.
 - Reframe policy skill as merchant charter (read-first, proposal writes, multi-brand).
@@ -867,6 +954,8 @@ community-mcp-marketplace/
 |---|---|
 | session / ops | `workspace_summary` |
 | contacts | `contacts_list`, `contact_get` |
+| inbox | `inbox_list`, `conversation_get` |
+| investigate | `messages_search` |
 | reservations | `reservations_list`, `reservation_*` |
 | dispatch | `dispatch_list`, `dispatch_create`, `escalate_to_human` |
 | knowledge | `knowledge_search` |

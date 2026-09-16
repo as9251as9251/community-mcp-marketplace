@@ -33,6 +33,8 @@ Canonical design: repo `docs/我們的Skill設計.md` · local summary `referenc
 | 連線／驗證／登入 MCP／設定好了嗎 | `s1mple-session` |
 | 你能做什麼／憲章／邊界 | 本 skill ＋ `references/merchant-charter.md` |
 | 聯絡人／客戶／查誰 | `s1mple-contacts` |
+| 收件匣／訊息中心／誰找過 | `s1mple-inbox` |
+| 搜訊息／查對話內容／關鍵字 | `s1mple-investigate` |
 | 預約 | `s1mple-reservations` |
 | 派工 | `s1mple-dispatch` |
 | 知識庫／FAQ／價目／店規 | `s1mple-knowledge` |

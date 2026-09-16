@@ -33,6 +33,8 @@ Canonical design: repo `docs/我們的Skill設計.md` · local summary `referenc
 | 連線／驗證／登入 MCP／設定好了嗎 | `infinity-labs-session` |
 | 你能做什麼／憲章／邊界 | 本 skill ＋ `references/merchant-charter.md` |
 | 聯絡人／客戶／查誰 | `infinity-labs-contacts` |
+| 收件匣／訊息中心／誰找過 | `infinity-labs-inbox` |
+| 搜訊息／查對話內容／關鍵字 | `infinity-labs-investigate` |
 | 預約 | `infinity-labs-reservations` |
 | 派工 | `infinity-labs-dispatch` |
 | 知識庫／FAQ／價目／店規 | `infinity-labs-knowledge` |

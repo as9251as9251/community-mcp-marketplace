@@ -9,9 +9,9 @@ See repo root: [`docs/我們的Skill設計.md`](../../docs/我們的Skill設計.
 
 Includes:
 
-- Skills: connect, session, charter/policy, contacts, reservations, dispatch, knowledge, memory, ops
+- Skills: connect, session, charter/policy, contacts, inbox, investigate, reservations, dispatch, knowledge, memory, ops
 - References: merchant-charter, write-lifecycle, brand-isolation, product-terms, error-recovery
-- Commands: validate, contacts, summary, reservations, dispatch, knowledge, escalate, explain-capabilities
+- Commands: validate, contacts, inbox, search-messages, summary, reservations, dispatch, knowledge, escalate, explain-capabilities
 - Host manifests: Cursor, Claude, Codex, Agents
 
 No product source code. Data stays on `infinity-labs.zeabur.app`.

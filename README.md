@@ -4,7 +4,7 @@
 
 **不含**後台原始碼、資料庫、金鑰、商家資料。真正能力在各站伺服器（REAL／s1mple／INFINITY LABS）。
 
-版本 **1.3.0**。
+版本 **1.4.0**。
 
 ## 我們自己的設計（請先讀）
 
@@ -54,6 +54,8 @@ community-mcp-marketplace/
 |---|---|
 | session / ops | `workspace_summary` |
 | contacts | `contacts_list`, `contact_get` |
+| inbox | `inbox_list`, `conversation_get` |
+| investigate | `messages_search` |
 | reservations | `reservations_list`, `reservation_*` |
 | dispatch | `dispatch_list`, `dispatch_create`, `escalate_to_human` |
 | knowledge | `knowledge_search` |

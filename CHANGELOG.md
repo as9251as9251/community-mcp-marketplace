@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.4.0
+
+- MCP P0 tools (product): `inbox_list`, `conversation_get`, `messages_search` on all three brands.
+- Skills: `*-inbox`, `*-investigate`; commands: `list-inbox`, `search-messages`.
+
 ## 1.3.0
 
 - Publish our own skill design: `docs/我們的Skill設計.md` (merchant charter).
