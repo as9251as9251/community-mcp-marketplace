@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.9.1
+
+- Dashboard: global Agent proposal approval queue (`/workspaces/:id/agent-proposals`).
+- No new MCP tools; use `proposals_list` then approve in the product UI.
+
 ## 1.9.0
 
 - MCP proposals: `knowledge_upsert`, `flow_set_enabled`, `flow_start`.
