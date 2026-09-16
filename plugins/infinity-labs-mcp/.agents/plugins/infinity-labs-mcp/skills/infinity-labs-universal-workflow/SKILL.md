@@ -21,8 +21,8 @@ Canonical design: repo `docs/我們的Skill設計.md` · local summary `referenc
 ## Mandatory core
 
 1. **Read first, propose second** — lists/summary/search before writes.
-2. **Confirm before writes** — follow write-lifecycle for every proposal tool.
-3. **Proposal ≠ live** — remind dashboard approval unless the result says applied.
+2. **Confirm before writes** — follow write-lifecycle for every proposal tool (`message_send`, `broadcast_create`, tags, reservations, …).
+3. **Proposal ≠ live** — remind dashboard approval unless the result says applied. For `broadcast_create`, approval only creates a **draft** — user still sends from Broadcast page.
 4. **Allowlist** — missing from `tools/list` means disabled; do not invent names.
 5. **Brand isolation** — only MCP `infinity-labs` on `infinity-labs.zeabur.app`.
 
@@ -35,6 +35,8 @@ Canonical design: repo `docs/我們的Skill設計.md` · local summary `referenc
 | 聯絡人／客戶／查誰 | `infinity-labs-contacts` |
 | 收件匣／訊息中心／誰找過 | `infinity-labs-inbox` |
 | 搜訊息／查對話內容／關鍵字 | `infinity-labs-investigate` |
+| 發訊息／回覆客人／私訊 | `infinity-labs-messaging` |
+| 群發／broadcast | `infinity-labs-broadcast` |
 | 預約 | `infinity-labs-reservations` |
 | 派工 | `infinity-labs-dispatch` |
 | 知識庫／FAQ／價目／店規 | `infinity-labs-knowledge` |

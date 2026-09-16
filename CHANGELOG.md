@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.5.0
+
+- P1 MCP: `message_send` (approve → send), `broadcast_list`, `broadcast_audience_preview`, `broadcast_create` (approve → draft only).
+- Skills: `*-messaging`, `*-broadcast`; commands: `list-broadcasts`, `draft-broadcast`.
+
 ## 1.4.0
 
 - MCP P0 tools (product): `inbox_list`, `conversation_get`, `messages_search` on all three brands.

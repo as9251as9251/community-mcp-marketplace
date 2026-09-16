@@ -7,7 +7,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 PLUGINS = ROOT / "plugins"
-VERSION = "1.4.0"
+VERSION = "1.5.0"
 
 BRANDS = [
     {
@@ -387,8 +387,8 @@ Canonical design: repo `docs/我們的Skill設計.md` · local summary `referenc
 ## Mandatory core
 
 1. **Read first, propose second** — lists/summary/search before writes.
-2. **Confirm before writes** — follow write-lifecycle for every proposal tool.
-3. **Proposal ≠ live** — remind dashboard approval unless the result says applied.
+2. **Confirm before writes** — follow write-lifecycle for every proposal tool (`message_send`, `broadcast_create`, tags, reservations, …).
+3. **Proposal ≠ live** — remind dashboard approval unless the result says applied. For `broadcast_create`, approval only creates a **draft** — user still sends from Broadcast page.
 4. **Allowlist** — missing from `tools/list` means disabled; do not invent names.
 5. **Brand isolation** — only MCP `{key}` on `{domain}`.
 
@@ -401,6 +401,8 @@ Canonical design: repo `docs/我們的Skill設計.md` · local summary `referenc
 | 聯絡人／客戶／查誰 | `{key}-contacts` |
 | 收件匣／訊息中心／誰找過 | `{key}-inbox` |
 | 搜訊息／查對話內容／關鍵字 | `{key}-investigate` |
+| 發訊息／回覆客人／私訊 | `{key}-messaging` |
+| 群發／broadcast | `{key}-broadcast` |
 | 預約 | `{key}-reservations` |
 | 派工 | `{key}-dispatch` |
 | 知識庫／FAQ／價目／店規 | `{key}-knowledge` |
@@ -500,6 +502,63 @@ description: Search {disp} inbox message bodies with messages_search (read-only,
 
 - Read-only. No send / broadcast / CRM writes here.
 - Hard max **30 days** — split longer asks into multiple windows and say so.
+""",
+    )
+
+    skill(
+        f"{key}-messaging/SKILL.md",
+        f"""---
+name: {key}-messaging
+description: Propose a 1:1 text message to a {disp} contact via message_send (human approval required before send).
+---
+
+# Skill: {key}-messaging
+
+**Prerequisite:** `{key}-universal-workflow` + `references/write-lifecycle.md`.
+
+## MCP tools
+
+- `message_send` — **proposal**. Required `contact_id`, `text` (plain text only).
+
+## Workflow
+
+1. Resolve `contact_id` via `{key}-inbox` / `{key}-contacts` if needed.
+2. Confirm recipient + full message text with the user.
+3. Call `message_send`. Tell the user it is pending inbox approval and will send only after approve.
+4. Do not claim the guest already received it until approval/execution succeeds.
+
+## Guardrails
+
+- Text only. No images/stickers/cards via this skill yet.
+- Never skip confirmation.
+""",
+    )
+
+    skill(
+        f"{key}-broadcast/SKILL.md",
+        f"""---
+name: {key}-broadcast
+description: List broadcasts, preview audience size, and propose draft broadcasts on {disp} (broadcast_list, broadcast_audience_preview, broadcast_create).
+---
+
+# Skill: {key}-broadcast
+
+**Prerequisite:** `{key}-universal-workflow` + `references/write-lifecycle.md` for create.
+
+## Read
+
+- `broadcast_list` — recent tasks (`limit` 1–50)
+- `broadcast_audience_preview` — eligible counts for `platform` + `target_type` (`all|tag`) + optional `target_tag`
+
+## Write / proposal
+
+- `broadcast_create` — propose a **draft** (`message` required; optional `name`, `platform`, `target_type`, `target_tag`). After approval a draft is created — user must still press Send in the Broadcast page.
+
+## Workflow
+
+1. Preview audience before creating.
+2. Confirm name / platform / target / message.
+3. Call `broadcast_create`; explain draft ≠ sent.
 """,
     )
 
@@ -625,6 +684,8 @@ description: {disp} project overview via workspace_summary, and router to domain
 | 聯絡人 | `{key}-contacts` |
 | 收件匣／對話 | `{key}-inbox` |
 | 搜訊息 | `{key}-investigate` |
+| 發私訊 | `{key}-messaging` |
+| 群發 | `{key}-broadcast` |
 | 預約 | `{key}-reservations` |
 | 派工／轉真人 | `{key}-dispatch` |
 | FAQ／價目 | `{key}-knowledge` |
@@ -673,6 +734,26 @@ description: 使用 {key}-investigate 搜尋訊息內文
 ---
 
 使用 {key}-investigate（messages_search）搜尋訊息。若我還沒給關鍵字，先問我要搜什麼；時間窗預設 14 天、最多 30 天。
+""",
+    )
+    command(
+        "list-broadcasts.md",
+        f"""---
+name: list-broadcasts
+description: 使用 {key}-broadcast 列出近期群發
+---
+
+使用 {key}-broadcast 的 broadcast_list 列出近期群發任務。
+""",
+    )
+    command(
+        "draft-broadcast.md",
+        f"""---
+name: draft-broadcast
+description: 使用 {key}-broadcast 預覽受眾並提議建立群發草稿
+---
+
+使用 {key}-broadcast：先 broadcast_audience_preview 給我可送人數，確認文案／平台／對象後再 broadcast_create。提醒我核准後仍是草稿，要到群發頁才發送。
 """,
     )
     command(
@@ -749,9 +830,9 @@ See repo root: [`docs/我們的Skill設計.md`](../../docs/我們的Skill設計.
 
 Includes:
 
-- Skills: connect, session, charter/policy, contacts, inbox, investigate, reservations, dispatch, knowledge, memory, ops
+- Skills: connect, session, charter/policy, contacts, inbox, investigate, messaging, broadcast, reservations, dispatch, knowledge, memory, ops
 - References: merchant-charter, write-lifecycle, brand-isolation, product-terms, error-recovery
-- Commands: validate, contacts, inbox, search-messages, summary, reservations, dispatch, knowledge, escalate, explain-capabilities
+- Commands: validate, contacts, inbox, search-messages, broadcasts, draft-broadcast, summary, reservations, dispatch, knowledge, escalate, explain-capabilities
 - Host manifests: Cursor, Claude, Codex, Agents
 
 No product source code. Data stays on `{domain}`.
@@ -867,6 +948,11 @@ You can also re-Authenticate after Logout on the agent side if the token is stal
 
 ## {VERSION}
 
+- P1 MCP: `message_send` (approve → send), `broadcast_list`, `broadcast_audience_preview`, `broadcast_create` (approve → draft only).
+- Skills: `*-messaging`, `*-broadcast`; commands: `list-broadcasts`, `draft-broadcast`.
+
+## 1.4.0
+
 - MCP P0 tools (product): `inbox_list`, `conversation_get`, `messages_search` on all three brands.
 - Skills: `*-inbox`, `*-investigate`; commands: `list-inbox`, `search-messages`.
 
@@ -956,6 +1042,8 @@ community-mcp-marketplace/
 | contacts | `contacts_list`, `contact_get` |
 | inbox | `inbox_list`, `conversation_get` |
 | investigate | `messages_search` |
+| messaging | `message_send`（提案） |
+| broadcast | `broadcast_list`, `broadcast_audience_preview`, `broadcast_create`（草稿提案） |
 | reservations | `reservations_list`, `reservation_*` |
 | dispatch | `dispatch_list`, `dispatch_create`, `escalate_to_human` |
 | knowledge | `knowledge_search` |
